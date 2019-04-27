@@ -9,5 +9,6 @@ C- 라는 C의 부분집합 언어의 컴파일러를 구현한다.
 
 # Utilities
 ## Docker
-`./test.sh`로 테스트함
-`INPUT_SOURCE` 환경변수에 테스트에 쓰일 `sample_inputs` 아래의 소스코드명을 지정함
+* build image: `docker build --rm -t cspro_mimic .`
+* run image: `docker run -v $PWD:/project -it cspro_mimic bash`
+* start the exited one: `docker start <name>` and `docker attach <name>`
