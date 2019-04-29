@@ -16,13 +16,13 @@ test: all
 $(EXEC_NAME): $(OBJS)
 	$(CC) -o $@ $? -lfl
 
-build/%.o: src/%.c
-	$(CC) -c -o $@ $?
+build/%.o: src/%.c build/cminus.tab.h
+	$(CC) -Ibuild -c -o $@ $<
 
 build/lex.yy.o: src/cminus.l build/cminus.tab.h
-	$(LEX) -t $< | $(CC) -Isrc -c -o $@ -xc -
+	$(LEX) -t $< | $(CC) -Isrc -Ibuild -c -o $@ -xc -
 
-build/cminus.tab.o: build/cminus.tab.c build/cminus.tab.h
+build/cminus.tab.o: build/cminus.tab.c
 	$(CC) -Isrc -c -o $@ $<
 
 build/cminus.tab.c build/cminus.tab.h: src/cminus.y
