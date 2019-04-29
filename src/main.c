@@ -1,7 +1,7 @@
 #include "globals.h"
 
 /* set NO_PARSE to TRUE to get scanner-only compiler */
-#define NO_PARSE TRUE
+#define NO_PARSE FALSE
 
 /* set NO_ANALYZE to TRUE to get parser-only compiler */
 #define NO_ANALYZE TRUE
