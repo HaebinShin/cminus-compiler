@@ -1,9 +1,12 @@
 %{
   #include "globals.h"
   #include "scan.h"
+  #include "cminus.tab.h"
   char tokenString[MAXTOKENLEN+1];
 
-  static ScanErrorType errorType = NO_ERROR;
+  static enum {
+      NO_ERROR, INVALID_TOKEN_ERROR, COMMENT_ERROR
+  } errorType = NO_ERROR;
 %}
 
 letter [A-Za-z]
@@ -75,6 +78,7 @@ while return WHILE;
 
 %%
 
+/* obsolete */
 TokenType getToken(void) {
   static int firstTime = TRUE;
   TokenType currentToken;
@@ -96,7 +100,7 @@ TokenType getToken(void) {
   strncpy(tokenString, yytext, MAXTOKENLEN);
   if(TraceScan) {
     fprintf(listing, "\t%d\t\t", lineno);
-    fprintf(listing, "%s\t\t", tokenNames[currentToken]);
+    fprintf(listing, "%s\t\t", getTokenName(currentToken));
     if(currentToken != ERROR) {
       fprintf(listing, "%s\n", tokenString);
     }

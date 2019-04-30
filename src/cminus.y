@@ -6,18 +6,20 @@
   #include "scan.h"
   #include "parse.h"
 
-  #define YYSTYPE TreeNode *;
+  #define YYSTYPE TreeNode *
   static char *savedName;
   static int saveLineno;
   static TreeNode *savedTree;
+
+  static int yyerror(char const *message);
+  static int yylex(void);
 %}
 
+%token ELSE IF INT RETURN VOID WHILE
 %token NUM
 %token ID
-%token ELSE IF INT RETURN VOID WHILE
 %token PLUS MINUS STAR SLASH LT LE GT GE EQ NE ASSIGN SEMI COMMA
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
-%token ERROR
 
 %%
 program: declaration-list;
@@ -32,11 +34,12 @@ param: type-specifier ID | type-specifier ID LBRACKET RBRACKET;
 compound-stmt: LBRACE local-declarations statement-list RBRACE;
 local-declarations: local-declarations var-declaration | /* empty */;
 statement-list: statement-list statement | /* empty */;
-statement: expression-stmt | compound-stmt | selection-stmt | iteration-stmt | retrun-stmt;
+statement: expression-stmt | compound-stmt | selection-stmt | iteration-stmt | return-stmt;
 expression-stmt: expression SEMI | SEMI;
 selection-stmt: IF LPAREN expression RPAREN statement
   | IF LPAREN expression RPAREN statement ELSE statement;
 iteration-stmt: WHILE LPAREN expression RPAREN statement;
+return-stmt: RETURN SEMI | RETURN expression SEMI;
 expression: var ASSIGN expression | simple-expression;
 var: ID | ID LBRACKET expression RBRACKET;
 simple-expression: additive-expression relop additive-expression | additive-expression;

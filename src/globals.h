@@ -14,26 +14,17 @@
 #define TRUE 1
 #endif
 
+#ifndef YYPARSER
+#include "cminus.tab.h"
+#endif
+
 /* MAXRESERVED = the number of reserved words */
 #define MAXRESERVED 8
 
-typedef enum {
-    /* book-keeping tokens */
-    ENDFILE, ERROR, BLKCOMMENT,
-    /* reserved words */
-    ELSE, IF, INT, RETURN, VOID, WHILE,
-    /* multicharacter tokens */
-    ID, NUM,
-    /* special symbols */
-    PLUS, MINUS, STAR, SLASH, LT, LE, GT, GE, EQ, NE, ASSIGN, SEMI, COMMA,
-    LPAREN, RPAREN, LBRACKET, RBRACKET, LBRACE, RBRACE
-} TokenType;
-
-typedef enum {
-    NO_ERROR, INVALID_TOKEN_ERROR, COMMENT_ERROR
-} ScanErrorType;
-
-extern char const **tokenNames;
+#define ENDFILE 0
+#define ERROR 1
+#define BLKCOMMENT 2
+typedef int TokenType;
 
 extern FILE *source; /* source code text file */
 extern FILE *listing; /* listing output text file */

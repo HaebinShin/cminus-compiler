@@ -11,5 +11,6 @@ extern char tokenString[MAXTOKENLEN+1];
  * next token in source file
  */
 TokenType getToken(void);
+char const *getTokenName(TokenType type);
 
 #endif

@@ -30,8 +30,8 @@ FILE *code;
 
 /* allocate and set tracing flags */
 int EchoSource = TRUE;
-int TraceScan = TRUE;
-int TraceParse = FALSE;
+int TraceScan = FALSE;
+int TraceParse = TRUE;
 int TraceAnalyze = FALSE;
 int TraceCode = FALSE;
 
@@ -55,7 +55,9 @@ int main(int argc, char *argv[]) {
   }
 
   listing = stdout; /* send listing to screen */
-  // fprintf(listing, "\nC- COMPILATION: %s\n", pgm);
+#ifdef NO_PARSE
+  fprintf(listing, "\nC- COMPILATION: %s\n", pgm);
+#endif
 
 #if NO_PARSE
   while(getToken() != ENDFILE) { /* NOOP */ }
@@ -91,6 +93,7 @@ int main(int argc, char *argv[]) {
 #endif
 #endif
 #endif
+  /* TODO: teardown syntax tree*/
   fclose(source);
   return 0;
 }
