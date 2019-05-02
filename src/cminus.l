@@ -102,9 +102,6 @@ static void _printToken(TokenType currentToken) {
     if(currentToken == ERROR) {
       fprintf(listing, "%s\n", getErrorText(errorType));
     }
-    else if(currentToken == BLKCOMMENT) {
-      fprintf(listing, "\n");
-    }
     else {
       fprintf(listing, "%s\n", tokenString);
     }
