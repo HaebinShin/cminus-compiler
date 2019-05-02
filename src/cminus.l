@@ -5,7 +5,7 @@
   #include "cminus.tab.h"
   char tokenString[MAXTOKENLEN+1];
 
-  static enum {
+  static enum _ErrorType {
       NO_ERROR, INVALID_TOKEN_ERROR, COMMENT_ERROR
   } errorType = NO_ERROR;
 
@@ -67,6 +67,7 @@ while return WHILE;
   }
   if(ch == EOF) {
     errorType = COMMENT_ERROR;
+    Error = TRUE;
     _printToken(ERROR);
   }
 }
@@ -87,20 +88,19 @@ TokenType getToken(void) {
   _printToken(currentToken);
   return currentToken;
 }
+
+static char const *getErrorText(enum _ErrorType errorType) {
+  if(errorType == COMMENT_ERROR) return "Comment Error";
+  else if(errorType == INVALID_TOKEN_ERROR) return "Invalid Token Error";
+  return "-- Unknown Error";
+}
+
 static void _printToken(TokenType currentToken) {
   if(TraceScan) {
     fprintf(listing, "\t%d\t\t", lineno);
     fprintf(listing, "%s\t\t", getTokenName(currentToken));
     if(currentToken == ERROR) {
-      if(errorType == COMMENT_ERROR) {
-        fprintf(listing, "Comment Error\n");
-      }
-      else if(errorType == INVALID_TOKEN_ERROR) {
-        fprintf(listing, "Invalid Token Error\n");
-      }
-      else {
-        fprintf(listing, "-- Unknown Error\n");
-      }
+      fprintf(listing, "%s\n", getErrorText(errorType));
     }
     else if(currentToken == BLKCOMMENT) {
       fprintf(listing, "\n");
@@ -110,6 +110,8 @@ static void _printToken(TokenType currentToken) {
     }
   }
 
-FUNC_END:
-  ;
+  if(currentToken == ERROR) {
+    fprintf(listing, "Lexical error at line %d\n", lineno);
+    fprintf(listing, "%s\n", getErrorText(errorType));
+  }
 }

@@ -36,6 +36,7 @@
 %token <tok> ELSE IF INT RETURN VOID WHILE
 %token <tok> PLUS MINUS STAR SLASH LT LE GT GE EQ NE ASSIGN SEMI COMMA
 %token <tok> LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
+%token <tok> LEX_ERROR
 
 %%
 program: { savedTree = NULL; } declaration-list {
@@ -257,15 +258,20 @@ arg-list: arg-list COMMA expression {
 %%
 
 static int yyerror(char const *message) {
-  fprintf(listing, "Syntax error at line %d: %s\n", lineno, message);
-  fprintf(listing, "Current token: ");
-  printToken(yychar, tokenString);
-  Error = TRUE;
+  if(yychar == LEX_ERROR) printf("Syntax error due to Lexical error\n");
+  else {
+    fprintf(listing, "Syntax error at line %d: %s\n", lineno, message);
+    fprintf(listing, "Current token: ");
+    printToken(yychar, tokenString);
+    Error = TRUE;
+  }
   return 0;
 }
 
 static int yylex(void) {
-  return getToken();
+  TokenType tok = getToken();
+  if(Error) return LEX_ERROR;
+  return tok;
 }
 
 TreeNode *parse(void) {
