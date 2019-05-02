@@ -14,10 +14,6 @@
 #define TRUE 1
 #endif
 
-#ifndef YYPARSER
-#include "cminus.tab.h"
-#endif
-
 /* MAXRESERVED = the number of reserved words */
 #define MAXRESERVED 8
 
@@ -34,28 +30,34 @@ extern int lineno; /* source line number for listing */
 
 /**** Syntax tree for parsing ****/
 
-typedef enum { StmtK, ExpK} NodeKind;
-typedef enum { IfK, RepeatK, AssignK, ReadK, WriteK } StmtKind;
-typedef enum { OpK, ConstK, IdK } ExpKind;
+typedef enum { DeclK, ParamK, StmtK, ExprK, TypeK } NodeKind;
+typedef enum { VarDeclK, FunDeclK } DeclKind;
+typedef enum { /*ExprStmtK, */CompdK, SelectK, IterK, RetK } StmtKind;
+typedef enum { VarK, OpExprK, CallK, ConstK } ExprKind;
 
 /* ExpType is used for type checking */
-typedef enum { Void, Integer, Boolean } ExpType;
+typedef enum { VoidK, IntK } TypeKind;
 
-#define MAXCHILDREN 3
+#define MAXCHILDREN 7
 
 typedef struct treeNode {
+    int nChildren;
     struct treeNode *child[MAXCHILDREN];
     struct treeNode *sibling;
     int lineno;
     NodeKind nodekind;
-    union { StmtKind stmt; ExpKind exp; } kind;
+    union { DeclKind decl; StmtKind stmt; ExprKind expr; } kind;
     union {
         TokenType op;
         int val;
         char *name;
     } attr;
-    ExpType type; /* for type checking of exps */
+    TypeKind type;
 } TreeNode;
+
+#ifndef YYPARSER
+#include "cminus.tab.h"
+#endif
 
 /**************************************************/
 /***********   Flags for tracing       ************/

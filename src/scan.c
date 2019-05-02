@@ -25,7 +25,7 @@ char const *getTokenName(TokenType type) {
   #endif
 
   switch (type) {
-    GENERATE_CASE(EOF)
+    case ENDFILE: return "EOF";
     GENERATE_CASE(ERROR)
     GENERATE_CASE(BLKCOMMENT)
     GENERATE_CASE(ELSE)

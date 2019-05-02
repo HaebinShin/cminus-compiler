@@ -1,5 +1,6 @@
 %{
   #include "globals.h"
+  #include "util.h"
   #include "scan.h"
   #include "cminus.tab.h"
   char tokenString[MAXTOKENLEN+1];
@@ -7,6 +8,8 @@
   static enum {
       NO_ERROR, INVALID_TOKEN_ERROR, COMMENT_ERROR
   } errorType = NO_ERROR;
+
+  static void _printToken(TokenType);
 %}
 
 letter [A-Za-z]
@@ -45,8 +48,8 @@ while return WHILE;
 "]" return RBRACKET;
 "{" return LBRACE;
 "}" return RBRACE;
-{identifier} return ID;
-{number} return NUM;
+{identifier} { yylval.identifier = copyString(yytext); return ID; }
+{number} { yylval.number = atoi(yytext); return NUM; }
 "/*" {
   int ch;
   int flag = 0;
@@ -55,7 +58,7 @@ while return WHILE;
       flag = 1;
     }
     else if(flag == 1 && ch == '/') {
-      return BLKCOMMENT;
+      break;
     }
     else {
       flag = 0;
@@ -64,7 +67,7 @@ while return WHILE;
   }
   if(ch == EOF) {
     errorType = COMMENT_ERROR;
-    return ERROR;
+    _printToken(ERROR);
   }
 }
 <<EOF>> { 
@@ -78,43 +81,35 @@ while return WHILE;
 
 %%
 
-/* obsolete */
 TokenType getToken(void) {
-  static int firstTime = TRUE;
-  TokenType currentToken;
-  if(firstTime) {
-    firstTime = FALSE;
-    ++lineno;
-    yyin = source;
-    yyout = listing;
-
-    if(TraceScan) {
-      fprintf(listing, "line number\t\t");
-      fprintf(listing, "token\t\t");
-      fprintf(listing, "lexeme\n");
-      fprintf(listing, "-----------------------------------------------------\n");
-    }
-  }
-  currentToken = yylex();
-  if(currentToken == BLKCOMMENT) goto FUNC_END;
+  TokenType currentToken = yylex();
   strncpy(tokenString, yytext, MAXTOKENLEN);
+  _printToken(currentToken);
+  return currentToken;
+}
+static void _printToken(TokenType currentToken) {
   if(TraceScan) {
     fprintf(listing, "\t%d\t\t", lineno);
     fprintf(listing, "%s\t\t", getTokenName(currentToken));
-    if(currentToken != ERROR) {
-      fprintf(listing, "%s\n", tokenString);
+    if(currentToken == ERROR) {
+      if(errorType == COMMENT_ERROR) {
+        fprintf(listing, "Comment Error\n");
+      }
+      else if(errorType == INVALID_TOKEN_ERROR) {
+        fprintf(listing, "Invalid Token Error\n");
+      }
+      else {
+        fprintf(listing, "-- Unknown Error\n");
+      }
     }
-    else if(errorType == COMMENT_ERROR) {
-      fprintf(listing, "Comment Error\n");
-    }
-    else if(errorType == INVALID_TOKEN_ERROR) {
-      fprintf(listing, "Invalid Token Error\n");
+    else if(currentToken == BLKCOMMENT) {
+      fprintf(listing, "\n");
     }
     else {
-      fprintf(listing, "-- Unknown Error\n");
+      fprintf(listing, "%s\n", tokenString);
     }
   }
 
 FUNC_END:
-  return currentToken;
+  ;
 }

@@ -55,9 +55,18 @@ int main(int argc, char *argv[]) {
   }
 
   listing = stdout; /* send listing to screen */
-#ifdef NO_PARSE
-  fprintf(listing, "\nC- COMPILATION: %s\n", pgm);
-#endif
+
+  extern FILE *yyin, *yyout;
+  ++lineno;
+  yyin = source;
+  yyout = listing;
+
+  if(TraceScan) {
+    fprintf(listing, "line number\t\t");
+    fprintf(listing, "token\t\t");
+    fprintf(listing, "lexeme\n");
+    fprintf(listing, "-----------------------------------------------------\n");
+  }
 
 #if NO_PARSE
   while(getToken() != ENDFILE) { /* NOOP */ }

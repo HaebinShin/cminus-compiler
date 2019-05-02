@@ -13,3 +13,7 @@ C- 라는 C의 부분집합 언어의 컴파일러를 구현한다.
 * build image: `docker build --rm -t cspro_mimic .`
 * run image: `docker run -v $PWD:/project -it cspro_mimic bash`
 * start the exited one: `docker start <name>` and `docker attach <name>`
+
+# References
+http://aquamentus.com/flex_bison.html
+https://stackoverflow.com/questions/38009696/token-redefinition-flex-bison
