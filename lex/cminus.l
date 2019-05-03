@@ -54,10 +54,14 @@ whitespace  [ \t]+
 <<EOF>>         {return ENDFILE;}
 "/*"             { char c;
                   int endCommentFlag=0;
+                  int validCommentFlag=0;
                   do
                   { c = input();
                     if (c == '*') endCommentFlag=1;
-                    else if(c == '/' && endCommentFlag==1) return COMMENT; 
+                    else if(c == '/' && endCommentFlag==1){
+                      validCommentFlag=1;
+                      break; 
+                    }
                     else if (c == '\n'){
                       lineno++;
                       endCommentFlag=0;
@@ -66,7 +70,9 @@ whitespace  [ \t]+
                       endCommentFlag=0;
                     }
                   } while (c != EOF);
-                  return COMMENT_ERROR;
+                  if (!validCommentFlag){
+                        return COMMENT_ERROR;
+                  }
                 }
 .               {return ERROR;}
 
@@ -88,3 +94,4 @@ TokenType getToken(void)
   }
   return currentToken;
 }
+

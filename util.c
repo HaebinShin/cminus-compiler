@@ -15,9 +15,6 @@
 
 void printToken( TokenType token, const char* tokenString )
 { 
-  if (token == COMMENT)
-    return;
-
   fprintf(listing,"\t%d\t\t",lineno);
   switch (token)
   {
@@ -101,6 +98,60 @@ TreeNode * newExpNode(ExpKind kind)
   return t;
 }
 
+/* Function newDeclNode creates a new expression 
+ * node for syntax tree construction
+ */
+TreeNode * newDeclNode(DeclKind kind)
+{ TreeNode * t = (TreeNode *) malloc(sizeof(TreeNode));
+  int i;
+  if (t==NULL)
+    fprintf(listing,"Out of memory error at line %d\n",lineno);
+  else {
+    for (i=0;i<MAXCHILDREN;i++) t->child[i] = NULL;
+    t->sibling = NULL;
+    t->nodekind = DeclK;
+    t->kind.decl = kind;
+    t->lineno = lineno;
+  }
+  return t;
+}
+
+/* Function newParamNode creates a new expression 
+ * node for syntax tree construction
+ */
+TreeNode * newParamNode(ParamKind kind)
+{ TreeNode * t = (TreeNode *) malloc(sizeof(TreeNode));
+  int i;
+  if (t==NULL)
+    fprintf(listing,"Out of memory error at line %d\n",lineno);
+  else {
+    for (i=0;i<MAXCHILDREN;i++) t->child[i] = NULL;
+    t->sibling = NULL;
+    t->nodekind = ParamK;
+    t->kind.type = kind;
+    t->lineno = lineno;
+  }
+  return t;
+}
+
+/* Function newTypeNode creates a new expression 
+ * node for syntax tree construction
+ */
+TreeNode * newTypeNode(TypeKind kind)
+{ TreeNode * t = (TreeNode *) malloc(sizeof(TreeNode));
+  int i;
+  if (t==NULL)
+    fprintf(listing,"Out of memory error at line %d\n",lineno);
+  else {
+    for (i=0;i<MAXCHILDREN;i++) t->child[i] = NULL;
+    t->sibling = NULL;
+    t->nodekind = TypeK;
+    t->kind.type = kind;
+    t->lineno = lineno;
+  }
+  return t;
+}
+
 /* Function copyString allocates and makes a new
  * copy of an existing string
  */
@@ -132,6 +183,24 @@ static void printSpaces(void)
     fprintf(listing," ");
 }
 
+static void printOp(TokenType op)
+{ switch (op)
+    { 
+    case PLUS: fprintf(listing,"+\n"); break;
+    case MINUS: fprintf(listing,"-\n"); break;
+    case TIMES: fprintf(listing,"*\n"); break;
+    case OVER: fprintf(listing,"/\n"); break;
+    case LT: fprintf(listing,"<\n"); break;
+    case LTEQ: fprintf(listing,"<=\n"); break;
+    case GT: fprintf(listing,">\n"); break;
+    case GTEQ: fprintf(listing,">=\n"); break;
+    case EQ: fprintf(listing,"==\n"); break;
+    case NOTEQ: fprintf(listing,"!=\n"); break;
+    default: /* should never happen */
+      fprintf(listing,"Unknown op: %d\n", op);
+    }
+}
+
 /* procedure printTree prints a syntax tree to the 
  * listing file using indentation to indicate subtrees
  */
@@ -142,42 +211,93 @@ void printTree( TreeNode * tree )
     printSpaces();
     if (tree->nodekind==StmtK)
     { switch (tree->kind.stmt) {
+        case CompK:
+          fprintf(listing,"Compound Statement\n");
+          break;
         case IfK:
           fprintf(listing,"If\n");
           break;
-        case RepeatK:
-          fprintf(listing,"Repeat\n");
+        case IterK:
+          fprintf(listing,"While\n");
           break;
+        case RetK:
+          fprintf(listing,"Return\n");
+          break;
+        default:
+          fprintf(listing,"Unknown StmtNode kind\n");
+          break;
+      }
+    }
+    else if (tree->nodekind==ExpK)
+    { switch (tree->kind.exp) {
         case AssignK:
-          fprintf(listing,"Assign to: %s\n",tree->attr.name);
+          fprintf(listing,"Op: =\n");
           break;
-        case ReadK:
-          fprintf(listing,"Read: %s\n",tree->attr.name);
+        case OpK:
+          fprintf(listing,"Op: ");
+          printOp(tree->attr.op);
           break;
-        case WriteK:
-          fprintf(listing,"Write\n");
+        case ConstK:
+          fprintf(listing,"Const: %d\n",tree->attr.val);
+          break;
+        case IdK:
+          fprintf(listing,"Id: %s\n", tree->attr.name);
+          break;
+        case IdArrK:
+          fprintf(listing,"Array Id: %s\n", tree->attr.name);
+          break;
+        case CallK:
+          fprintf(listing,"Call Precedure: %s\n", tree->attr.name);
           break;
         default:
           fprintf(listing,"Unknown ExpNode kind\n");
           break;
       }
     }
-    else if (tree->nodekind==ExpK)
-    { switch (tree->kind.exp) {
-        case OpK:
-          fprintf(listing,"Op: ");
-          printToken(tree->attr.op,"\0");
+    else if (tree->nodekind==DeclK)
+    { switch (tree->kind.decl) {
+        case FuncK:
+          fprintf(listing,"Function Declaration: %s\n", tree->attr.name);
           break;
-        case ConstK:
-          fprintf(listing,"Const: %d\n",tree->attr.val);
+        case VarK:
+          fprintf(listing,"Variable Declaration: %s\n", tree->attr.name);
           break;
-        case IdK:
-          fprintf(listing,"Id: %s\n",tree->attr.name);
+        case VarArrK:
+          fprintf(listing, "Array Variable Declaration: name = %s, size = %d\n", 
+                  tree->attr.arrAttr.name, tree->attr.arrAttr.len);
           break;
         default:
-          fprintf(listing,"Unknown ExpNode kind\n");
+          fprintf(listing,"Unknown DeclNode kind\n");
           break;
       }
+    }
+    else if (tree->nodekind==ParamK)
+    { switch (tree->kind.param) {
+        case ArrParamK:
+          fprintf(listing,"Array Parameter: name = %s\n", tree->attr.arrAttr.name);
+          break;
+        case NonArrParamK:
+          if (tree->attr.typeSpec == VOID)
+            fprintf(listing,"Parameter: (void)\n");
+          else
+            fprintf(listing,"Parameter: %s\n",tree->attr.name);
+          break;
+        default:
+          fprintf(listing,"Unknown ParamNode kind\n");
+          break;
+      }
+    }
+    else if (tree->nodekind==TypeK)
+    { 
+      switch (tree->attr.typeSpec)
+        {
+        case INT:
+          fprintf(listing, "Type: int\n");
+          break;
+        case VOID:
+          fprintf(listing, "Type: void\n");
+          break;
+        }
     }
     else fprintf(listing,"Unknown node kind\n");
     for (i=0;i<MAXCHILDREN;i++)
