@@ -38,6 +38,8 @@
 %token <tok> LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
 %token <tok> LEX_ERROR
 
+%right THEN ELSE
+
 %%
 program: { savedTree = NULL; } declaration-list {
   savedTree = $2;
@@ -147,8 +149,6 @@ statement: expression-stmt { $$ = $1; }
   | return-stmt { $$ = $1; }
 ;
 expression-stmt: expression SEMI {
-  // $$ = newStmtNode(ExprStmtK);
-  // $$->child[0] = $1;
   $$ = $1;
 } | SEMI {
   $$ = NULL;
@@ -158,7 +158,7 @@ selection-stmt: IF LPAREN expression RPAREN statement {
   $$ = newStmtNode(SelectK);
   $$->child[0] = $3;
   $$->child[1] = $5;
-} | IF LPAREN expression RPAREN statement ELSE statement {
+} %prec THEN | IF LPAREN expression RPAREN statement ELSE statement {
   $$ = newStmtNode(SelectK);
   $$->child[0] = $3;
   $$->child[1] = $5;
