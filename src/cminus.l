@@ -68,7 +68,7 @@ while return WHILE;
   if(ch == EOF) {
     errorType = COMMENT_ERROR;
     Error = TRUE;
-    _printToken(ERROR);
+    return ERROR;
   }
 }
 <<EOF>> { 
@@ -77,6 +77,7 @@ while return WHILE;
 
 . {
   errorType = INVALID_TOKEN_ERROR;
+  Error = TRUE;
   return ERROR;
 }
 
