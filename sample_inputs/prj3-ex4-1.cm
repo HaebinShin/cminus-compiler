@@ -1,0 +1,10 @@
+/* error2
+         duplicated variable */
+int a;
+int a;
+void fun(void) {
+        ;
+}
+void main(void) {
+        a = 2;
+}

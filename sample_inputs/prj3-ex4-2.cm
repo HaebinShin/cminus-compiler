@@ -1,0 +1,12 @@
+/* error2
+         duplicated function */
+int a;
+void fun(void) {
+        ;
+}
+void fun(int a) {
+        a = 1;
+}
+void main(void) {
+        a = 2;
+}
