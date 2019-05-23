@@ -2,7 +2,7 @@ EXEC_NAME:=run.out
 LEX:=flex
 YACC:=bison
 CPPFLAGS+=-Isrc -Ibuild
-OBJS:=$(addprefix build/, cminus.tab.o lex.yy.o main.o util.o scan.o)
+OBJS:=$(addprefix build/, cminus.tab.o lex.yy.o main.o util.o scan.o symtab.o analyze.o)
 SHELL:=/bin/bash
 
 all: pre-build $(EXEC_NAME)
