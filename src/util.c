@@ -113,6 +113,8 @@ TreeNode *newDeclNode(DeclKind kind) {
     t->type = VoidK;
     t->lineno = lineno;
   }
+
+  return  t;
 }
 
 TreeNode *newParamNode(void) {
@@ -129,6 +131,8 @@ TreeNode *newParamNode(void) {
     t->type= VoidK;
     t->lineno = lineno;
   }
+
+  return t;
 }
 
 TreeNode *newTypeNode(void) {
@@ -145,6 +149,8 @@ TreeNode *newTypeNode(void) {
     t->attr.val = -1;
     t->lineno = lineno;
   }
+
+  return t;
 }
 
 /* Function newStmtNode creates a new statement
@@ -168,7 +174,7 @@ TreeNode *newStmtNode(StmtKind kind) {
     t->nChildren = nChildren;
     t->sibling = NULL;
     t->nodekind = StmtK;
-    t->kind.expr = kind;
+    t->kind.stmt = kind;
     t->lineno = lineno;
   }
   return t;
@@ -190,6 +196,7 @@ TreeNode *newExprNode(ExprKind kind) {
         nChildren = 2; break;
       case ConstK:
         nChildren = 0; break;
+      default: break;
     }
     for (i=0; i<nChildren; ++i) t->child[i] = NULL;
     t->nChildren = nChildren;
