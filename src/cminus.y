@@ -70,6 +70,7 @@ var-declaration: type-specifier ID SEMI {
   $$->child[0] = $1;
   $$->child[0]->attr.val = $4;
   $$->attr.name = $2;
+  $$->type = $1->type;
 }
 ;
 type-specifier: INT { $$ = newTypeNode(); $$->type = IntK; }
@@ -81,6 +82,7 @@ fun-declaration: type-specifier ID LPAREN params RPAREN compound-stmt {
   $$->attr.name = $2;
   $$->child[1] = $4;
   $$->child[2] = $6;
+  $$->type = $1->type;
 }
 ;
 params: param-list {
@@ -111,6 +113,7 @@ param: type-specifier ID {
   $$->child[0] = $1;
   $$->child[0]->attr.val = 0;
   $$->attr.name = $2;
+  $$->type = $1->type;
 }
 ;
 compound-stmt: LBRACE local-declarations statement-list RBRACE {
