@@ -1,5 +1,5 @@
-#ifndef _ANALYZE_H_
-#define _ANALYZE_H_
+#ifndef _SYMTAB_H_
+#define _SYMTAB_H_
 
 typedef struct BucketListRec *BucketList;
 
