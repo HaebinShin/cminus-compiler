@@ -1,5 +1,6 @@
 #include "globals.h"
 #include "analyze.h"
+#include "symtab.h"
 
 #define MAX_SCOPE_DEPTH 20
 
@@ -16,7 +17,7 @@ static void traverseSingle(
 
 static void traverseSiblings(
     TreeNode *tnode, TraverseFunc funcPre, TraverseFunc funcPost) {
-  while (tnode != NULL) {
+  if (tnode != NULL) {
     traverseSingle(tnode, funcPre, funcPost);
     tnode = tnode->sibling;
   }
@@ -41,8 +42,31 @@ void exitScope(void) {
 static void buildSymtab_pre(TreeNode *tnode) {
   switch (tnode->nodekind) {
   case DeclK:
+    switch (tnode->kind.decl) {
+      case VarDeclK:
+        if (st_lookup()>0) {
+          /* already in */
+          break;
+        }
+        st_insert();
+        break;
+      case FuncDeclK:
+        if (st_lookup()>0) {
+          /* already in */
+          break;
+        }
+        enterScope();
+        
+        st_insert();
+        break;
+    }
     break;
   case ParamK:
+    if (st_lookup()>0) {
+      /* alread in */
+      break;
+    }
+    st_insert(); 
     break;
   case StmtK:
     if(tnode->kind.stmt != CompdK) break;
@@ -70,6 +94,15 @@ static void buildSymtab_post(TreeNode *tnode) {
 
 void buildSymtab(TreeNode *syntaxTree) {
   traverseSiblings(syntaxTree, buildSymtab_pre, buildSymtab_post);
+  if (TraceAnalyze) {
+    fprintf(listing, "\nSymbol table:\n\n");
+    printSymTab(listing);
+  }
+}
+
+static void typeError(TreeNode *t, char *message) {
+  fprintf(listing, "Type error at line %d: %s\n", t->lineno, message);
+  ERROR = TRUE;
 }
 
 void typeCheck(TreeNode *tnode) {

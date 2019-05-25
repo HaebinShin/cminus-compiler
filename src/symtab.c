@@ -26,10 +26,10 @@ struct SymbolRec {
   LineList lineList;
 };
 
-struct BucketListRec {
+typedef struct BucketListRec {
   struct SymbolRec *sym;
   struct BucketListRec *next;
-};
+} *BucketList;
 
 static unsigned hash_digest(unsigned char *key) {
   unsigned temp = 0;
