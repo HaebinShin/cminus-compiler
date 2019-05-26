@@ -158,20 +158,23 @@ void printSymbolTable(FILE *out, BucketList *symtab, int scopeId) {
       }
 
       fprintf(out, "%-8s", vpf);
-      if(tnode->attr.val == -1) {
+      int arrSize = tnode->child[0]->attr.val;
+      if(arrSize == -1) {
         fprintf(out, "%-8s", "No");
         fprintf(out, "%-8s", "-");
-        fprintf(out, "%-8s\n", tnode->type == IntK ? "int" : "void");
+        fprintf(out, "%-8s", tnode->type == IntK ? "int" : "void");
       }
       else {
         fprintf(out, "%-8s", "Array");
-        fprintf(out, "%-8d", tnode->attr.val);
+        fprintf(out, "%-8d", arrSize);
         fprintf(out, "%-8s", "array");
       }
 
       printLineList(out, lineList);
 
       fputc('\n', out);
+
+      p = p->next;
     }
   }
   fputc('\n', out);
