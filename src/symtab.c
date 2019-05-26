@@ -18,11 +18,8 @@ typedef struct LineListRec {
 } *LineList;
 
 struct SymbolRec {
-  char *name;
+  TreeNode *tnode;
   int loc;
-  int szArray;
-  enum _SymDecl decl;
-  TypeKind type;
   LineList lineList;
 };
 
@@ -52,15 +49,6 @@ void destroySymtab(BucketList *symtab) {
     BucketList p = symtab[i], pn;
     while(p) {
       pn = p->next;
-
-      // delete a linked list of line numbers
-      LineList plist = p->sym->lineList, pnlist;
-      while(plist) {
-        pnlist = plist->next;
-        free(plist);
-        plist = pnlist;
-      }
-
       deleteSymbol(p->sym);
       free(p);
       p = pn;
@@ -80,18 +68,14 @@ struct SymbolRec *newSymbol(TreeNode *tnode, int loc) {
   else return NULL;
 
   struct SymbolRec *sym = malloc(sizeof(struct SymbolRec));
-  sym->name = copyString(tnode->attr.name);
+  sym->tnode = tnode;
   sym->loc = loc;
-  sym->szArray = tnode->child[0]->attr.val;
-  sym->decl = decl;
-  sym->type = tnode->child[0]->type;
   sym->lineList = calloc(1, sizeof(struct LineListRec));
   sym->lineList->lineno = tnode->lineno;
-  return  sym;
+  return sym;
 }
 
 void deleteSymbol(struct SymbolRec *sym) {
-  free(sym->name);
   LineList plist = sym->lineList, pnlist;
   while(plist) {
     pnlist = plist->next;
@@ -102,7 +86,6 @@ void deleteSymbol(struct SymbolRec *sym) {
 }
 
 void addLineno(struct SymbolRec *symbolRec, int lineno) {
-  // TODO
   LineList plist = symbolRec->lineList;
   while(plist->next != NULL) plist = plist->next;
   plist->next = calloc(1, sizeof(struct LineListRec));
@@ -111,7 +94,7 @@ void addLineno(struct SymbolRec *symbolRec, int lineno) {
 
 void st_insert(BucketList *symtab, struct SymbolRec *symbolRec) {
   BucketList p = malloc(sizeof(struct BucketListRec));
-  int h = hash_digest(symbolRec->name);
+  int h = hash_digest(symbolRec->tnode->attr.name);
 
   p->sym = symbolRec;
   p->next = symtab[h];
@@ -123,8 +106,9 @@ int st_lookup(BucketList *symtab, char *name) {
   int h = hash_digest(name);
   BucketList p = symtab[h];
   while(p != NULL) {
-    if(strcmp(name, p->sym->name) == 0) return p->sym->loc;
+    TreeNode* tnode = p->sym->tnode;
+    if(strcmp(name, tnode->attr.name) == 0) return p->sym->loc;
     p = p->next;
   }
-  return -1;
+  return INVALID_LOC_NUMBER;
 }

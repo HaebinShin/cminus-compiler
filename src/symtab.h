@@ -1,6 +1,8 @@
 #ifndef _SYMTAB_H_
 #define _SYMTAB_H_
 
+#define INVALID_LOC_NUMBER (0x7fFFffFF)
+
 typedef struct BucketListRec *BucketList;
 
 BucketList *constructSymtab(void);
