@@ -69,8 +69,8 @@ static void traverseSingle(
 static void enterScope(void) {
   struct ScopeRec *new_scope = &scopeWholeList[len_scopeWhileList++];
   new_scope->scopeId = scopeIdCounter++;
-  new_scope->symtab = constructSymtab();
   new_scope->scopeDepth = h_scopeStack;
+  new_scope->symtab = constructSymtab();
   
   scopeStack[h_scopeStack] = new_scope;
   ++h_scopeStack;
@@ -85,72 +85,17 @@ static void exitScope(TreeNode *tnode) {
   }
 }
 
+static struct ScopeRec *getPrevScope() {
+  return scopeStack[h_scopeStack - 2];
+}
+
 static struct ScopeRec *getCurrentScope() {
   return scopeStack[h_scopeStack - 1];
 }
 
 static void buildSymtab_pre(TreeNode *tnode) {
-  switch (tnode->nodekind) {
-  case StmtK:
-    if(tnode->kind.stmt != CompdK) break;
-
-    if(functionFlag) {
-      // This compound statement is a function body
-      // The function has already created new scope for this block
-      // Thus, you don't have to enter the scope
-      functionFlag = 0;
-    }
-    else enterScope();
-
-    getCurrentScope()->stackCounter = -4;
-    break;
-
-  case DeclK:
-    if(tnode->kind.decl != FunDeclK) break;
-
-    /** Function Declaration **/
-
-    if(mainFlag) {
-      // this function appears after the main function
-      ERROR_MSG(MAIN_FUNCTION_MUST_APPEAR_LAST, tnode->lineno, "");
-      exit(-1);
-    }
-
-    functionFlag = 1;
-    enterScope();
-    getCurrentScope()->stackCounter = 4;
-
-    // check if 'main' function
-    if(strcmp(tnode->attr.name, "main") == 0) {
-      if(tnode->type != VoidK) {
-        // return type is not 'void'
-        ERROR_MSG(MAIN_FUNCTION_RETURN_TYPE_MUST_BE_VOID, tnode->lineno, "");
-        exit(-1);
-      }
-      if(tnode->child[1]->nChildren > 0) {
-        // non-void parameters
-        ERROR_MSG(MAIN_FUNCTION_PAARM_TYPE_MUST_BE_VOID, tnode->lineno, "");
-        exit(-1);
-      }
-
-      // no error, this is the valid main function
-      mainFlag = 1;
-    }
-
-    break;
-
-  default:
-    break;
-  }
-}
-
-static void buildSymtab_post(TreeNode *tnode) {
-  switch (tnode->nodekind) {
-  case StmtK:
-    if(tnode->kind.stmt != CompdK) break;
-    exitScope(tnode);
-    break;
-
+  /* **** INSERT NEW SYMBOLS **** */
+  switch(tnode->nodekind) {
   case ParamK:
     if(tnode->nChildren == 0) {
       // indicates empty parameter list
@@ -228,6 +173,77 @@ static void buildSymtab_post(TreeNode *tnode) {
 
     break;
   }
+  default:
+    break;
+  }
+
+  /* **** WORKING WITH SCOPES **** */
+  switch (tnode->nodekind) {
+  case StmtK:
+    if(tnode->kind.stmt != CompdK) break;
+
+    if(functionFlag) {
+      // This compound statement is a function body
+      // The function has already created new scope for this block
+      // Thus, you don't have to enter the scope
+      functionFlag = 0;
+    }
+    else enterScope();
+
+    getCurrentScope()->stackCounter = -4;
+    if(h_scopeStack > 2) {
+      getCurrentScope()->stackCounter = getPrevScope()->stackCounter;
+    }
+
+    break;
+
+  case DeclK:
+    if(tnode->kind.decl != FunDeclK) break;
+
+    /** Function Declaration **/
+
+    if(mainFlag) {
+      // this function appears after the main function
+      ERROR_MSG(MAIN_FUNCTION_MUST_APPEAR_LAST, tnode->lineno, "");
+      exit(-1);
+    }
+
+    functionFlag = 1;
+    enterScope();
+    getCurrentScope()->stackCounter = 4;
+
+    // check if 'main' function
+    if(strcmp(tnode->attr.name, "main") == 0) {
+      if(tnode->type != VoidK) {
+        // return type is not 'void'
+        ERROR_MSG(MAIN_FUNCTION_RETURN_TYPE_MUST_BE_VOID, tnode->lineno, "");
+        exit(-1);
+      }
+      if(tnode->child[1]->nChildren > 0) {
+        // non-void parameters
+        ERROR_MSG(MAIN_FUNCTION_PAARM_TYPE_MUST_BE_VOID, tnode->lineno, "");
+        exit(-1);
+      }
+
+      // no error, this is the valid main function
+      mainFlag = 1;
+    }
+
+    break;
+
+  default:
+    break;
+  }
+
+}
+
+static void buildSymtab_post(TreeNode *tnode) {
+  switch (tnode->nodekind) {
+  case StmtK:
+    if(tnode->kind.stmt != CompdK) break;
+    exitScope(tnode);
+    break;
+
   case ExprK: {
     if(tnode->kind.expr != VarK && tnode->kind.expr != CallK) break;
 
