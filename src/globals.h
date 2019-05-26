@@ -51,6 +51,7 @@ typedef struct treeNode {
         TokenType op;
         int val;
         char *name;
+        void *scope_ref;
     } attr;
     TypeKind type;
 } TreeNode;
