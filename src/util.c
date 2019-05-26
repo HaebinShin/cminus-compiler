@@ -350,6 +350,9 @@ void analyzeErrorMsg(enum AnalyzeError err, int lineno, char const *msg) {
   case IDENTIFIER_NOT_FOUND:
     canonicalErrMsg = "symbol not found error";
     break;
+  case ZERO_SIZED_ARRAY_DECLARATION:
+    canonicalErrMsg = "zero sized array declaration is forbidden";
+    break;
   default:
     canonicalErrMsg = "@@ UNKNOWN ERROR !! @@";
     break;
