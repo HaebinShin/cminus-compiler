@@ -92,6 +92,14 @@ void addLineno(struct SymbolRec *symbolRec, int lineno) {
   plist->lineno = lineno;
 }
 
+int getDeclLineno(struct SymbolRec *symbolRec) {
+  return symbolRec->tnode->lineno;
+}
+
+int getMemLoc(struct SymbolRec *symbolRec) {
+  return symbolRec->loc;
+}
+
 void st_insert(BucketList *symtab, struct SymbolRec *symbolRec) {
   BucketList p = malloc(sizeof(struct BucketListRec));
   int h = hash_digest(symbolRec->tnode->attr.name);
@@ -102,13 +110,13 @@ void st_insert(BucketList *symtab, struct SymbolRec *symbolRec) {
 }
 
 // returns memory loc
-int st_lookup(BucketList *symtab, char *name) {
+struct SymbolRec *st_lookup(BucketList *symtab, char *name) {
   int h = hash_digest(name);
   BucketList p = symtab[h];
   while(p != NULL) {
     TreeNode* tnode = p->sym->tnode;
-    if(strcmp(name, tnode->attr.name) == 0) return p->sym->loc;
+    if(strcmp(name, tnode->attr.name) == 0) return p->sym;
     p = p->next;
   }
-  return INVALID_LOC_NUMBER;
+  return NULL;
 }
