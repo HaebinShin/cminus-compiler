@@ -120,3 +120,59 @@ struct SymbolRec *st_lookup(BucketList *symtab, char *name) {
   }
   return NULL;
 }
+
+static printLineList(FILE *out, LineList lineList) {
+  while(lineList != NULL) {
+    fprintf(out, "%-8d", lineList->lineno);
+    lineList = lineList->next;
+  }
+}
+
+void printSymbolTable(FILE *out, BucketList *symtab, int scopeId) {
+  fprintf(out, "Name    Scope   Loc     V/P/F   Array?  ArrSize Type    Line Numbers  \n");
+  fprintf(out, "----------------------------------------------------------------------\n");
+  int bi;
+  for(bi = 0; bi < SIZE; ++bi) {
+    BucketList p = symtab[bi];
+    while(p != NULL) {
+      TreeNode *tnode = p->sym->tnode;
+      int loc = p->sym->loc;
+      LineList lineList = p->sym->lineList;
+
+      fprintf(out, "%-8s", tnode->attr.name);
+      fprintf(out, "%-8d", scopeId);
+      fprintf(out, "%-8d", loc);
+
+      char *vpf = "";
+      if(tnode->nodekind == ParamK) {
+        vpf = "Par";
+      }
+      else if(tnode->nodekind == DeclK) {
+        if(tnode->kind.decl == VarDeclK) vpf = "Var";
+        else vpf = "Func";
+      }
+      else {
+        fprintf(stderr, "f**k this, i'm out (unknown v/p/f field)\n");
+        fflush(stderr);
+        exit(-1);
+      }
+
+      fprintf(out, "%-8s", vpf);
+      if(tnode->attr.val == -1) {
+        fprintf(out, "%-8s", "No");
+        fprintf(out, "%-8s", "-");
+        fprintf(out, "%-8s\n", tnode->type == IntK ? "int" : "void");
+      }
+      else {
+        fprintf(out, "%-8s", "Array");
+        fprintf(out, "%-8d", tnode->attr.val);
+        fprintf(out, "%-8s", "array");
+      }
+
+      printLineList(out, lineList);
+
+      fputc('\n', out);
+    }
+  }
+  fputc('\n', out);
+}

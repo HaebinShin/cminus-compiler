@@ -18,4 +18,6 @@ int getMemLoc(struct SymbolRec *symbolRec);
 void st_insert(BucketList *symtab, struct SymbolRec *symbolRec);
 struct SymbolRec *st_lookup(BucketList *symtab, char *name);
 
+void printSymbolTable(FILE *out, BucketList *symtab, int scopeId);
+
 #endif
