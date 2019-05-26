@@ -359,14 +359,14 @@ void analyzeErrorMsg(enum AnalyzeError err, int lineno, char const *msg) {
   }
 
   int sps = 0, i;
-  sps = fprintf(stderr, "ERROR in line %d : ", lineno);
-  fprintf(stderr, canonicalErrMsg);
-  fputc('\n', stderr);
-  fflush(stderr);
+  sps = fprintf(listing, "ERROR in line %d : ", lineno);
+  fputs(canonicalErrMsg, listing);
+  fputc('\n', listing);
+  fflush(listing);
 
-  for(i=0; i<sps; ++i) fputc(' ', stderr);
-  fprintf(stderr, msg);
-  fputc('\n', stderr);
-  fputc('\n', stderr);
-  fflush(stderr);
+  for(i=0; i<sps; ++i) fputc(' ', listing);
+  fputs(msg, listing);
+  fputc('\n', listing);
+  fputc('\n', listing);
+  fflush(listing);
 }

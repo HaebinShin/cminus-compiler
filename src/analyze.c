@@ -7,7 +7,7 @@
 #define MAX_SCOPE_DEPTH 20
 #define ERROR_MSG(a, b, c) (analyzeErrorMsg(a, b, c))
 
-typedef struct ScopeRec {
+struct ScopeRec {
   int scopeId;
   int scopeDepth;
   int stackCounter;
@@ -86,7 +86,7 @@ static void exitScope(TreeNode *tnode) {
 }
 
 static struct ScopeRec *getCurrentScope() {
-  return &scopeStack[h_scopeStack - 1];
+  return scopeStack[h_scopeStack - 1];
 }
 
 static void buildSymtab_pre(TreeNode *tnode) {
@@ -234,7 +234,7 @@ static void buildSymtab_post(TreeNode *tnode) {
     char const *name = tnode->attr.name;
     int i = h_scopeStack - 1;
     while(i >= 0) {
-      struct ScopeRec *scope = &scopeStack[i];
+      struct ScopeRec *scope = scopeStack[i];
       struct SymbolRec *sym = st_lookup(scope->symtab, name);
       if(sym != NULL)  {
         addLineno(sym, tnode->lineno);

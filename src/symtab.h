@@ -16,7 +16,7 @@ int getDeclLineno(struct SymbolRec *symbolRec);
 int getMemLoc(struct SymbolRec *symbolRec);
 
 void st_insert(BucketList *symtab, struct SymbolRec *symbolRec);
-struct SymbolRec *st_lookup(BucketList *symtab, char *name);
+struct SymbolRec *st_lookup(BucketList *symtab, char const *name);
 
 void printSymbolTable(FILE *out, BucketList *symtab, int scopeId);
 

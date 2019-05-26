@@ -28,7 +28,7 @@ struct BucketListRec {
   struct BucketListRec *next;
 };
 
-static unsigned hash_digest(unsigned char *key) {
+static unsigned hash_digest(unsigned char const *key) {
   unsigned temp = 0;
   while(*key) {
     temp = ((temp << SHIFT) + *key) % SIZE;
@@ -110,7 +110,7 @@ void st_insert(BucketList *symtab, struct SymbolRec *symbolRec) {
 }
 
 // returns memory loc
-struct SymbolRec *st_lookup(BucketList *symtab, char *name) {
+struct SymbolRec *st_lookup(BucketList *symtab, char const *name) {
   int h = hash_digest(name);
   BucketList p = symtab[h];
   while(p != NULL) {
@@ -121,7 +121,7 @@ struct SymbolRec *st_lookup(BucketList *symtab, char *name) {
   return NULL;
 }
 
-static printLineList(FILE *out, LineList lineList) {
+static void printLineList(FILE *out, LineList lineList) {
   while(lineList != NULL) {
     fprintf(out, "%-8d", lineList->lineno);
     lineList = lineList->next;
