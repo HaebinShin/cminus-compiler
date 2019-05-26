@@ -151,8 +151,15 @@ static void buildSymtab_post(TreeNode *tnode) {
     exitScope(tnode);
     break;
 
-  case DeclK: 
-  case ParamK: {
+  case ParamK:
+    if(tnode->nChildren == 0) {
+      // indicates empty parameter list
+      // skip actions
+      break;
+    }
+    // if non-empty parameter,
+    // flows through below
+  case DeclK: {
     char _buf[128];
 
     char const *name = tnode->attr.name;
@@ -205,12 +212,6 @@ static void buildSymtab_post(TreeNode *tnode) {
     }
     // parameter
     else {
-      if(tnode->nChildren == 0) {
-        // indicates empty parameter list
-        // skip actions
-        break;
-      }
-
       if(tnode->type == VoidK) {
         sprintf(_buf, "parameter '%s' cannot be of type 'void'.", name);
         ERROR_MSG(PARAMETER_HAS_INCOMPLETE_TYPE, tnode->lineno, _buf);
