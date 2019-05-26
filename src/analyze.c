@@ -19,7 +19,7 @@ typedef void (*TraverseFunc)(TreeNode *);
 /* Whole list of scopes created so far */
 /* scopeWholeLilst[0] EQUALS the global scope */
 static struct ScopeRec scopeWholeList[MAX_SCOPES_COUNT];
-static int len_scopeWhileList;
+static int len_scopeWholeList;
 
 /* for referencing parent scopes */
 static struct ScopeRec *scopeStack[MAX_SCOPE_DEPTH];
@@ -67,7 +67,7 @@ static void traverseSingle(
 }
 
 static void enterScope(void) {
-  struct ScopeRec *new_scope = &scopeWholeList[len_scopeWhileList++];
+  struct ScopeRec *new_scope = &scopeWholeList[len_scopeWholeList++];
   new_scope->scopeId = scopeIdCounter++;
   new_scope->scopeDepth = h_scopeStack;
   new_scope->symtab = constructSymtab();
@@ -275,7 +275,7 @@ static void buildSymtab_post(TreeNode *tnode) {
 }
 
 void buildSymtab(TreeNode *syntaxTree) {
-  len_scopeWhileList = 0;
+  len_scopeWholeList = 0;
   h_scopeStack = 0;
   functionFlag = 0;
   mainFlag = 0;
@@ -299,7 +299,7 @@ void buildSymtab(TreeNode *syntaxTree) {
 
   if(TraceAnalyze) {
     int i;
-    for(i=0; i<len_scopeWhileList; ++i) {
+    for(i=0; i<len_scopeWholeList; ++i) {
       printSymbolTable(listing, scopeWholeList[i].symtab, scopeWholeList[i].scopeDepth);
     }
   }
