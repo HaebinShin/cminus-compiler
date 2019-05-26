@@ -122,8 +122,12 @@ struct SymbolRec *st_lookup(BucketList *symtab, char const *name) {
 }
 
 static void printLineList(FILE *out, LineList lineList) {
+  int last_lineno = -1;
   while(lineList != NULL) {
-    fprintf(out, "%-8d", lineList->lineno);
+    if(last_lineno != lineList->lineno) {
+      fprintf(out, "%-8d", lineList->lineno);
+      last_lineno = lineList->lineno;
+    }
     lineList = lineList->next;
   }
 }
