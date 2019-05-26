@@ -64,6 +64,7 @@ var-declaration: type-specifier ID SEMI {
   $$ = newDeclNode(VarDeclK);
   $$->child[0] = $1;
   $$->attr.name = $2;
+  $$->type = $1->type;
 }
 | type-specifier ID LBRACKET NUM RBRACKET SEMI {
   $$ = newDeclNode(VarDeclK);
@@ -108,6 +109,7 @@ param: type-specifier ID {
   $$ = newParamNode();
   $$->child[0] = $1;
   $$->attr.name = $2;
+  $$->type = $1->type;
 } | type-specifier ID LBRACKET RBRACKET {
   $$ = newParamNode();
   $$->child[0] = $1;
