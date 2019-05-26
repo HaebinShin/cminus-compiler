@@ -322,3 +322,48 @@ void printTree(TreeNode *tree) {
   }
   UNINDENT;
 }
+
+void analyzeErrorMsg(enum AnalyzeError err, int lineno, char const *msg) {
+  char *canonicalErrMsg = NULL;
+  switch(err) {
+  case MAIN_FUNCTION_NOT_EXISTS:
+    canonicalErrMsg = "function 'main' does not exist.";
+    break;
+  case MAIN_FUNCTION_MUST_APPEAR_LAST:
+    canonicalErrMsg = "function 'main' must appear last";
+    break;
+  case MAIN_FUNCTION_PAARM_TYPE_MUST_BE_VOID:
+    canonicalErrMsg = "function 'main' must not have parameters";
+    break;
+  case MAIN_FUNCTION_RETURN_TYPE_MUST_BE_VOID:
+    canonicalErrMsg = "function 'main' must have a return type of 'void'";
+    break;
+  case SYMBOL_REDIFINITION:
+    canonicalErrMsg = "symbol redefinition error";
+    break;
+  case VARIABLE_HAS_INCOMPLETE_TYPE:
+    canonicalErrMsg = "some variable has an incomplete type";
+    break;
+  case PARAMETER_HAS_INCOMPLETE_TYPE:
+    canonicalErrMsg = "some parameter has an incomplete type";
+    break;
+  case IDENTIFIER_NOT_FOUND:
+    canonicalErrMsg = "symbol not found error";
+    break;
+  default:
+    canonicalErrMsg = "@@ UNKNOWN ERROR !! @@";
+    break;
+  }
+
+  int sps = 0, i;
+  sps = fprintf(stderr, "ERROR in line %d : ", lineno);
+  fprintf(stderr, canonicalErrMsg);
+  fputc('\n', stderr);
+  fflush(stderr);
+
+  for(i=0; i<sps; ++i) fputc(' ', stderr);
+  fprintf(stderr, msg);
+  fputc('\n', stderr);
+  fputc('\n', stderr);
+  fflush(stderr);
+}

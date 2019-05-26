@@ -8,6 +8,17 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
+enum AnalyzeError {
+    MAIN_FUNCTION_NOT_EXISTS,
+    MAIN_FUNCTION_MUST_APPEAR_LAST,
+    MAIN_FUNCTION_PAARM_TYPE_MUST_BE_VOID,
+    MAIN_FUNCTION_RETURN_TYPE_MUST_BE_VOID,
+    SYMBOL_REDIFINITION,
+    VARIABLE_HAS_INCOMPLETE_TYPE,
+    PARAMETER_HAS_INCOMPLETE_TYPE,
+    IDENTIFIER_NOT_FOUND
+};
+
 /* Procedure printToken prints a token
  * and its lexeme to the listing file
  */
@@ -38,5 +49,7 @@ char* copyString(char*);
  * listing file using indentation to indicate subtrees
  */
 void printTree(TreeNode*);
+
+void analyzeErrorMsg(enum AnalyzeError err, int lineno, char const *msg);
 
 #endif
