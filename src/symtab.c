@@ -89,7 +89,7 @@ void addLineno(struct SymbolRec *symbolRec, int lineno) {
   LineList plist = symbolRec->lineList;
   while(plist->next != NULL) plist = plist->next;
   plist->next = calloc(1, sizeof(struct LineListRec));
-  plist->lineno = lineno;
+  plist->next->lineno = lineno;
 }
 
 int getDeclLineno(struct SymbolRec *symbolRec) {
