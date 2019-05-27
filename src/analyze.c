@@ -179,10 +179,9 @@ static void buildSymtab_pre(TreeNode *tnode) {
         exit(-1);
       }
 
+      scope->stackCounter -= 4;
       sym = newSymbol(tnode, scope->stackCounter);
       st_insert(scope->symtab, sym);
-
-      scope->stackCounter += 4;
 
       // you don't have to care whether the parameter is of type array or not
     }
@@ -226,7 +225,18 @@ static void buildSymtab_pre(TreeNode *tnode) {
 
     functionFlag = 1;
     enterScope();
-    getCurrentScope()->stackCounter = 4;
+
+    // calculate address of top address of topmost parameter
+    int nParams = 0;
+    TreeNode *paramNode = tnode->child[1];
+    if(paramNode->nChildren > 0) {
+      while(paramNode != NULL) {
+        ++nParams;
+        paramNode = paramNode->sibling;
+      }
+    }
+
+    getCurrentScope()->stackCounter = 4 + 4*nParams;
 
     // check if 'main' function
     if(strcmp(tnode->attr.name, "main") == 0) {
@@ -328,7 +338,6 @@ static void typeCheck_pre(TreeNode *tnode) {
 }
 
 static void typeCheck_post(TreeNode *tnode) {
-
   NodeKind nodekind = tnode->nodekind;
 
   if(nodekind == ExprK) {
