@@ -89,13 +89,10 @@ static void enterScope(void) {
   ++h_scopeStack;
 }
 
-static void exitScope(TreeNode *tnode) {
+static struct ScopeRec *exitScope() {
   struct ScopeRec *exitingScope = scopeStack[--h_scopeStack];
 
-  if(tnode != NULL) {
-    // not a global scope
-    tnode->attr.scope_ref = (void *)exitingScope;
-  }
+  return exitingScope;
 }
 
 static struct ScopeRec *getPrevScope() {
@@ -254,7 +251,9 @@ static void buildSymtab_post(TreeNode *tnode) {
   switch (tnode->nodekind) {
   case StmtK:
     if(tnode->kind.stmt != CompdK) break;
-    exitScope(tnode);
+    
+    // store scope reference to AST node
+    tnode->attr.scope_ref = exitScope();
     break;
 
   case ExprK: {
@@ -294,7 +293,7 @@ void buildSymtab(TreeNode *syntaxTree) {
   traverseSiblings(syntaxTree, buildSymtab_pre, buildSymtab_post);
 
   // exit the global scope
-  exitScope(NULL);
+  exitScope();
 
   if(!mainFlag) {
     // main function has never been found
