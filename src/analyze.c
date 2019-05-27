@@ -158,15 +158,15 @@ static void buildSymtab_pre(TreeNode *tnode) {
       }
       if(arrSize == -1) arrSize = 1;
 
-      /* global variable symbols */
+      /* local variable symbols */
       if(scope->scopeId > 0) {
         scope->stackCounter -= 4 * arrSize;
         sym = newSymbol(tnode, scope->stackCounter);
       }
-      /* local variable symbols */
+      /* global variable symbols */
       else {
-        sym = newSymbol(tnode, scope->stackCounter);
         scope->stackCounter += 4 * arrSize;
+        sym = newSymbol(tnode, scope->stackCounter);
       }
 
       st_insert(scope->symtab, sym);
