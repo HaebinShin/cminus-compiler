@@ -457,14 +457,13 @@ static void typeCheck_post(TreeNode *tnode) {
       }
     }
     else if(kind == RetK) {
-      // TODO
       // requires the function to match RETURN statement against
       TreeNode *symNode = getTreeNode(lookupSymbol(funcName));
       assert(symNode != NULL);
       
       TypeKind nowType;
       if (tnode->nChildren > 0){
-        nowType = IntK;
+        nowType = tnode->child[0]->type;
       } else {
         nowType = VoidK;
       }
