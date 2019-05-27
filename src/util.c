@@ -353,6 +353,35 @@ void analyzeErrorMsg(enum AnalyzeError err, int lineno, char const *msg) {
   case ZERO_SIZED_ARRAY_DECLARATION:
     canonicalErrMsg = "zero sized array declaration is forbidden";
     break;
+  case ARRAY_SUBSCRIPT_TYPE_ERROR:
+    canonicalErrMsg = "array subscript is not an integer";
+    break;
+  case SUBSCRIPTED_VALUE_TYPE_ERROR:
+    canonicalErrMsg = "subscripted value is not an array";
+    break;
+  case EXPRESSION_IS_NOT_ASSIGNABLE:
+    canonicalErrMsg = "expression is not assignable";
+    break;
+  case INCOMPATIBLE_ASSIGNMENT_ERROR:
+    canonicalErrMsg = "assigning to 'int' from incompatible type 'void'";
+    break;
+  case INVALID_OPERANDS_BINARY_OPERATION:
+    canonicalErrMsg = "invalid operands to binary expression";
+    break;
+  case TOO_MANY_ARGUMENTS_ERROR:
+    canonicalErrMsg = "too many arguments in call to 'func'";
+    break;
+  case INCOMPATIBLE_PARAMETER_PASSING:
+    canonicalErrMsg = "passing incompatible type to parameter";
+    break;
+  case TOO_FEW_ARGUMENTS_ERROR:
+    canonicalErrMsg = "too few arguments to function call";
+    break;
+  case STATEMENT_EXPRESSION_TYPE_ERROR:
+    canonicalErrMsg = "statement requires expression of scalar type";
+    break;
+  case RETURN_TYPE_MISMATCH_ERROR:
+    canonicalErrMsg = "returned expression type mismatches declared function return type";
   default:
     canonicalErrMsg = "@@ UNKNOWN ERROR !! @@";
     break;

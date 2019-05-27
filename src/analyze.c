@@ -347,7 +347,7 @@ static void typeCheck_post(TreeNode *tnode) {
       if (tnode->attr.op == LBRACKET) {
         TreeNode *indexVal = tnode->child[1];
         if (indexVal->type == VoidK) {
-          ERROR_MSG(100,tnode->lineno,"expected int but actual was void");
+          ERROR_MSG(ARRAY_SUBSCRIPT_TYPE_ERROR, tnode->lineno, "");
           exit(-1);
         }
 
@@ -357,7 +357,7 @@ static void typeCheck_post(TreeNode *tnode) {
         int arrSize = varNode->child[0]->attr.val;
 
         if(arrSize == -1) {
-          ERROR_MSG(100,tnode->lineno,"subscripted value is not an array");
+          ERROR_MSG(SUBSCRIPTED_VALUE_TYPE_ERROR, tnode->lineno, "");
           exit(-1);
         }
 
@@ -366,11 +366,11 @@ static void typeCheck_post(TreeNode *tnode) {
         TreeNode *lhs = tnode->child[0];
         TreeNode *rhs = tnode->child[1];
         if (lhs->type == VoidK) {
-          ERROR_MSG(100,tnode->lineno,"expression is not assignable");
+          ERROR_MSG(EXPRESSION_IS_NOT_ASSIGNABLE, tnode->lineno, "");
           exit(-1);
         }
         else if (rhs->type == VoidK) {
-          ERROR_MSG(100,tnode->lineno,"assigning to 'int' from incompatible type 'void'");
+          ERROR_MSG(INCOMPATIBLE_ASSIGNMENT_ERROR, tnode->lineno, "");
           exit(-1);
         } else {
           tnode->type = rhs->type;
@@ -388,7 +388,7 @@ static void typeCheck_post(TreeNode *tnode) {
           if (right->type == VoidK) sprintf(_right_type, "void");
           else sprintf(_right_type, "int");
           sprintf(_buf, "operand1 has type %s, operand2 has type %s", _left_type, _right_type);
-          ERROR_MSG(100,tnode->lineno,_buf);
+          ERROR_MSG(INVALID_OPERANDS_BINARY_OPERATION, tnode->lineno, _buf);
           exit(-1);
         } else {
           tnode->type = IntK;
@@ -416,11 +416,13 @@ static void typeCheck_post(TreeNode *tnode) {
 
       while(nowParam) {
         if (symParam==NULL){
-          ERROR_MSG(100,tnode->lineno,"called func has too many arguments");
+          ERROR_MSG(TOO_MANY_ARGUMENTS_ERROR, tnode->lineno, "");
           exit(-1);
         }
         if (nowParam->type == VoidK) {
-          ERROR_MSG(100,tnode->lineno,"argument expected int but actual was void");
+          ERROR_MSG(
+              INCOMPATIBLE_PARAMETER_PASSING, tnode->lineno,
+              "expected int but actual was void");
           exit(-1);
         } else{
           nowParam = nowParam->sibling;
@@ -428,7 +430,7 @@ static void typeCheck_post(TreeNode *tnode) {
         }
       }
       if (symParam) {
-        ERROR_MSG(100,tnode->lineno,"called func needs more arguments");
+        ERROR_MSG(TOO_FEW_ARGUMENTS_ERROR, tnode->lineno, "");
         exit(-1);
       }
       tnode->type = symNode->type;
@@ -446,13 +448,17 @@ static void typeCheck_post(TreeNode *tnode) {
     }
     else if(kind == SelectK) {
       if (tnode->child[0]->type == VoidK) {
-        ERROR_MSG(100,tnode->lineno,"'if' statement requires expression of int");
+        ERROR_MSG(
+            STATEMENT_EXPRESSION_TYPE_ERROR, tnode->lineno,
+            "'if' statement requires expression of type 'int'");
         exit(-1);
       }
     }
     else if(kind == IterK) {
       if (tnode->child[0]->type == VoidK) {
-        ERROR_MSG(100,tnode->lineno,"'while' statement requires expression of int");
+        ERROR_MSG(
+            STATEMENT_EXPRESSION_TYPE_ERROR, tnode->lineno,
+            "'while' statement requires expression of type 'int'");
         exit(-1);
       }
     }
@@ -469,7 +475,7 @@ static void typeCheck_post(TreeNode *tnode) {
       }
 
       if (symNode->type != nowType) {
-        ERROR_MSG(100,tnode->lineno,"function returned type is not same decl func type");
+        ERROR_MSG(RETURN_TYPE_MISMATCH_ERROR, tnode->lineno, "");
         exit(-1);
       }
     }
