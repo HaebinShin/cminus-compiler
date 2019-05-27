@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <assert.h>
 
 #ifndef FALSE
 #define FALSE 0
