@@ -66,6 +66,19 @@ static void traverseSingle(
   funcPost(tnode);
 }
 
+static struct SymbolRec *lookupSymbol(char const *name) {
+  int i = h_scopeStack - 1;
+  while(i >= 0) {
+    struct ScopeRec *scope = scopeStack[i];
+    struct SymbolRec *sym = st_lookup(scope->symtab, name);
+    if (sym != NULL) {
+      return sym;
+    }
+    --i;
+  } 
+  return NULL;
+}
+
 static void enterScope(void) {
   struct ScopeRec *new_scope = &scopeWholeList[len_scopeWholeList++];
   new_scope->scopeId = scopeIdCounter++;
@@ -249,19 +262,11 @@ static void buildSymtab_post(TreeNode *tnode) {
 
     // var-expression / call-expression
     char const *name = tnode->attr.name;
-    int i = h_scopeStack - 1;
-    while(i >= 0) {
-      struct ScopeRec *scope = scopeStack[i];
-      struct SymbolRec *sym = st_lookup(scope->symtab, name);
-      if(sym != NULL)  {
-        addLineno(sym, tnode->lineno);
-        break;
-      }
-
-      --i;
+    struct SymbolRec *sym = lookupSymbol(name);
+    if(sym != NULL)  {
+      addLineno(sym, tnode->lineno);
     }
-
-    if(i < 0) {
+    else {
       char _buf[128];
       sprintf(_buf, "identifier '%s' cannot be resolved.", name);
       ERROR_MSG(IDENTIFIER_NOT_FOUND, tnode->lineno, _buf);
