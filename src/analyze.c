@@ -299,6 +299,10 @@ void buildSymtab(TreeNode *syntaxTree) {
   // exit the global scope
   exitScope();
 
+  assert(h_scopeStack == 0);
+  assert(functionFlag == 0);
+  assert(mainFlag == 1);
+
   if(!mainFlag) {
     // main function has never been found
     ERROR_MSG(MAIN_FUNCTION_NOT_EXISTS, 0, "");
@@ -313,7 +317,68 @@ void buildSymtab(TreeNode *syntaxTree) {
   }
 }
 
-void typeCheck(TreeNode *tnode) {
-  // TODO
-  printf("typeCheck! called");
+static void typeCheck_pre(TreeNode *tnode) {
+  if(tnode->nodekind == StmtK && tnode->kind.stmt == CompdK) {
+    enterExistingScope(tnode->attr.scope_ref);
+  }
+}
+
+static void typeCheck_post(TreeNode *tnode) {
+
+  NodeKind nodekind = tnode->nodekind;
+
+  if(nodekind == ExprK) {
+    ExprKind kind = tnode->kind.expr;
+
+    if(kind == OpExprK) {
+      // TODO
+    }
+    else if(kind == ConstK) {
+      // TODO
+    }
+    else if(kind == VarK) {
+      // TODO
+    }
+    else if(kind == CallK) {
+      // TODO
+    }
+    else {
+      // UNREACHABLE
+      assert(0);
+    }
+  }
+  else if(nodekind == DeclK && tnode->kind.decl == FunDeclK) {
+    // TODO
+    // memorize the function you are about to enter...
+  }
+  else if(nodekind == StmtK) {
+    ExprKind kind = tnode->kind.expr;
+
+    if(kind == CompdK) {
+      exitScope();
+    }
+    else if(kind == SelectK) {
+      // TODO
+    }
+    else if(kind == IterK) {
+      // TODO
+    }
+    else if(kind == RetK) {
+      // TODO
+      // requires the function to match RETURN statement against
+    }
+    else {
+      // UNREACHABLE
+      assert(0);
+    }
+  }
+}
+
+void typeCheck(TreeNode *syntaxTree) {
+  h_scopeStack = 0;
+
+  // scopeWholeList[0] == global scope
+  enterExistingScope(&scopeWholeList[0]);
+  traverseSiblings(syntaxTree, typeCheck_pre, typeCheck_post);
+  exitScope();
 }
