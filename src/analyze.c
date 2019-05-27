@@ -79,14 +79,18 @@ static struct SymbolRec *lookupSymbol(char const *name) {
   return NULL;
 }
 
+static void enterExistingScope(struct ScopeRec *scope) {
+  scopeStack[h_scopeStack] = scope;
+  ++h_scopeStack;
+}
+
 static void enterScope(void) {
   struct ScopeRec *new_scope = &scopeWholeList[len_scopeWholeList++];
   new_scope->scopeId = scopeIdCounter++;
   new_scope->scopeDepth = h_scopeStack;
   new_scope->symtab = constructSymtab();
   
-  scopeStack[h_scopeStack] = new_scope;
-  ++h_scopeStack;
+  enterExistingScope(new_scope);
 }
 
 static struct ScopeRec *exitScope() {
