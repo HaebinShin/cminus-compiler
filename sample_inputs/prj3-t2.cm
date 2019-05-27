@@ -1,0 +1,14 @@
+int glo;
+
+void func(void) { }
+
+void main(void) {
+    int arr[100];
+    int locA;
+    {
+        int locB;
+        locA = 1;
+        func(locA);
+        glo = locB;
+    }
+}

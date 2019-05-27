@@ -1,0 +1,12 @@
+int glo;
+
+void main(void) {
+    int arr[100];
+    int locA;
+    {
+        int locB;
+        locA = 1;
+        locA[0] = 1;
+        glo = locB;
+    }
+}

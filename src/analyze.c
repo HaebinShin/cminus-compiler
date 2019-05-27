@@ -350,6 +350,17 @@ static void typeCheck_post(TreeNode *tnode) {
           ERROR_MSG(100,tnode->lineno,"expected int but actual was void");
           exit(-1);
         }
+
+        // check subscipted variable is array variable
+        char *name = tnode->child[0]->attr.name;
+        TreeNode *varNode = getTreeNode(lookupSymbol(name));
+        int arrSize = varNode->child[0]->attr.val;
+
+        if(arrSize == -1) {
+          ERROR_MSG(100,tnode->lineno,"subscripted value is not an array");
+          exit(-1);
+        }
+
         tnode->type = IntK;
       } else if (tnode->attr.op == ASSIGN) {
         TreeNode *lhs = tnode->child[0];
@@ -358,9 +369,6 @@ static void typeCheck_post(TreeNode *tnode) {
           ERROR_MSG(100,tnode->lineno,"expression is not assignable");
           exit(-1);
         }
-        //else if (lhs->attr.op == LBRACKET && lhs->child[1]->type == VoidK) {
-        //  ERROR_MSG(); // array's index must be int
-        //} 
         else if (rhs->type == VoidK) {
           ERROR_MSG(100,tnode->lineno,"assigning to 'int' from incompatible type 'void'");
           exit(-1);
@@ -403,7 +411,9 @@ static void typeCheck_post(TreeNode *tnode) {
       assert(symNode != NULL);
       
       TreeNode *symParam = symNode->child[1];
+      if(symParam->nChildren == 0) symParam = NULL;
       TreeNode *nowParam = tnode->child[0];
+
       while(nowParam) {
         if (symParam==NULL){
           ERROR_MSG(100,tnode->lineno,"called func has too many arguments");
@@ -417,7 +427,7 @@ static void typeCheck_post(TreeNode *tnode) {
           symParam = symParam->sibling; 
         }
       }
-      if (symParam && symParam->nChildren > 0) {
+      if (symParam) {
         ERROR_MSG(100,tnode->lineno,"called func needs more arguments");
         exit(-1);
       }
@@ -427,10 +437,6 @@ static void typeCheck_post(TreeNode *tnode) {
       // UNREACHABLE
       assert(0);
     }
-  }
-  else if(nodekind == DeclK && tnode->kind.decl == FunDeclK) {
-    // TODO
-    // memorize the function you are about to enter...
   }
   else if(nodekind == StmtK) {
     ExprKind kind = tnode->kind.expr;
