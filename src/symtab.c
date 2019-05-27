@@ -100,6 +100,10 @@ int getMemLoc(struct SymbolRec *symbolRec) {
   return symbolRec->loc;
 }
 
+TreeNode *getTreeNode(struct SymbolRec *symbolRec) {
+  return symbolRec->tnode;
+}
+
 void st_insert(BucketList *symtab, struct SymbolRec *symbolRec) {
   BucketList p = malloc(sizeof(struct BucketListRec));
   int h = hash_digest(symbolRec->tnode->attr.name);

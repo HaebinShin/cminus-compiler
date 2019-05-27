@@ -14,6 +14,7 @@ void deleteSymbol(struct SymbolRec *sym);
 void addLineno(struct SymbolRec *symbolRec, int lineno);
 int getDeclLineno(struct SymbolRec *symbolRec);
 int getMemLoc(struct SymbolRec *symbolRec);
+TreeNode *getTreeNode(struct SymbolRec *symbolRec);
 
 void st_insert(BucketList *symtab, struct SymbolRec *symbolRec);
 struct SymbolRec *st_lookup(BucketList *symtab, char const *name);

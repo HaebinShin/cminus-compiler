@@ -38,6 +38,8 @@ static int mainFlag;
 static int scopeIdCounter;
 static int functionLocCounter;
 
+static char* funcName;
+
 
 static void NOOP(TreeNode *_) {
   /* DO NOTHING */
@@ -320,6 +322,8 @@ void buildSymtab(TreeNode *syntaxTree) {
 static void typeCheck_pre(TreeNode *tnode) {
   if(tnode->nodekind == StmtK && tnode->kind.stmt == CompdK) {
     enterExistingScope(tnode->attr.scope_ref);
+  } else if (tnode->nodekind == DeclK && tnode->kind.decl == FunDeclK) {
+    funcName = tnode->attr.name;
   }
 }
 
@@ -331,16 +335,84 @@ static void typeCheck_post(TreeNode *tnode) {
     ExprKind kind = tnode->kind.expr;
 
     if(kind == OpExprK) {
-      // TODO
+      if (tnode->attr.op == LBRACKET) {
+        TreeNode *indexVal = tnode->child[1];
+        if (indexVal->type == VoidK) {
+          ERROR_MSG(100,tnode->lineno,"expected int but actual was void");
+          exit(-1);
+        }
+        tnode->type = IntK;
+      } else if (tnode->attr.op == ASSIGN) {
+        TreeNode *lhs = tnode->child[0];
+        TreeNode *rhs = tnode->child[1];
+        if (lhs->type == VoidK) {
+          ERROR_MSG(100,tnode->lineno,"expression is not assignable");
+          exit(-1);
+        }
+        //else if (lhs->attr.op == LBRACKET && lhs->child[1]->type == VoidK) {
+        //  ERROR_MSG(); // array's index must be int
+        //} 
+        else if (rhs->type == VoidK) {
+          ERROR_MSG(100,tnode->lineno,"assigning to 'int' from incompatible type 'void'");
+          exit(-1);
+        } else {
+          tnode->type = rhs->type;
+        }
+      } else {
+        TreeNode *left = tnode->child[0];
+        TreeNode *right = tnode->child[1];
+        // TODO MORE
+        char _buf[128];
+        char _left_type[10];
+        char _right_type[10];
+        if (left->type == VoidK || right->type == VoidK) {
+          if (left->type == VoidK) sprintf(_left_type, "void");
+          else sprintf(_left_type, "int");
+          if (right->type == VoidK) sprintf(_right_type, "void");
+          else sprintf(_right_type, "int");
+          sprintf(_buf, "operand1 has type %s, operand2 has type %s", _left_type, _right_type);
+          ERROR_MSG(100,tnode->lineno,_buf);
+          exit(-1);
+        } else {
+          tnode->type = IntK;
+        }
+      }
     }
     else if(kind == ConstK) {
-      // TODO
+      tnode->type = IntK;
     }
     else if(kind == VarK) {
-      // TODO
+      char const *name = tnode->attr.name;
+      TreeNode *symNode = getTreeNode(lookupSymbol(name));
+      assert(symNode != NULL);
+      assert(symNode->type == IntK);
+      tnode->type = symNode->type; 
     }
     else if(kind == CallK) {
-      // TODO
+      char const *name = tnode->attr.name;
+      TreeNode *symNode = getTreeNode(lookupSymbol(name));
+      assert(symNode != NULL);
+      
+      TreeNode *symParam = symNode->child[1];
+      TreeNode *nowParam = tnode->child[0];
+      while(nowParam) {
+        if (symParam==NULL){
+          ERROR_MSG(100,tnode->lineno,"called func has too many arguments");
+          exit(-1);
+        }
+        if (nowParam->type == VoidK) {
+          ERROR_MSG(100,tnode->lineno,"argument expected int but actual was void");
+          exit(-1);
+        } else{
+          nowParam = nowParam->sibling;
+          symParam = symParam->sibling; 
+        }
+      }
+      if (symParam && symParam->nChildren > 0) {
+        ERROR_MSG(100,tnode->lineno,"called func needs more arguments");
+        exit(-1);
+      }
+      tnode->type = symNode->type;
     }
     else {
       // UNREACHABLE
@@ -358,14 +430,34 @@ static void typeCheck_post(TreeNode *tnode) {
       exitScope();
     }
     else if(kind == SelectK) {
-      // TODO
+      if (tnode->child[0]->type == VoidK) {
+        ERROR_MSG(100,tnode->lineno,"'if' statement requires expression of int");
+        exit(-1);
+      }
     }
     else if(kind == IterK) {
-      // TODO
+      if (tnode->child[0]->type == VoidK) {
+        ERROR_MSG(100,tnode->lineno,"'while' statement requires expression of int");
+        exit(-1);
+      }
     }
     else if(kind == RetK) {
       // TODO
       // requires the function to match RETURN statement against
+      TreeNode *symNode = getTreeNode(lookupSymbol(funcName));
+      assert(symNode != NULL);
+      
+      TypeKind nowType;
+      if (tnode->nChildren > 0){
+        nowType = IntK;
+      } else {
+        nowType = VoidK;
+      }
+
+      if (symNode->type != nowType) {
+        ERROR_MSG(100,tnode->lineno,"function returned type is not same decl func type");
+        exit(-1);
+      }
     }
     else {
       // UNREACHABLE
