@@ -1,8 +1,9 @@
 EXEC_NAME:=run.out
+ASM_NAME:=test.tm
 LEX:=flex
 YACC:=bison
 CPPFLAGS+=-Isrc -Ibuild
-OBJS:=$(addprefix build/, cminus.tab.o lex.yy.o main.o util.o scan.o symtab.o analyze.o)
+OBJS:=$(addprefix build/, cminus.tab.o lex.yy.o main.o util.o scan.o symtab.o analyze.o code.o cgen.o)
 SHELL:=/bin/bash
 
 all: pre-build $(EXEC_NAME)
@@ -13,6 +14,7 @@ pre-build:
 .PHONY: test
 test: all
 	./$(EXEC_NAME) sample_inputs/${INPUT_FILE}
+	spim -file ./$(ASM_NAME)
 
 $(EXEC_NAME): $(OBJS)
 	$(CC) -o $@ $^ -lfl

@@ -7,7 +7,7 @@
 #define NO_ANALYZE FALSE
 
 /* set NO_CODE to TRUE to get a compiler that does not generate code */
-#define NO_CODE TRUE
+#define NO_CODE FALSE
 
 #include "util.h"
 #if NO_PARSE
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
   if (!Error) {
     char *codefile;
     int fnlen = strcspn(pgm, ".");
-    codefile = (char *)calloc(fnlen_4, sizeof(char));
+    codefile = (char *)calloc(fnlen+4, sizeof(char));
     strncpy(codefile, pgm, fnlen);
     strcat(codefile, ".tm");
     code = fopen(codefile, "w");
