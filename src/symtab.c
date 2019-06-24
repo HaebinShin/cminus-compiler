@@ -19,7 +19,6 @@ typedef struct LineListRec {
 
 struct SymbolRec {
   TreeNode *tnode;
-  int loc;
   LineList lineList;
 };
 
@@ -69,7 +68,7 @@ struct SymbolRec *newSymbol(TreeNode *tnode, int loc) {
 
   struct SymbolRec *sym = malloc(sizeof(struct SymbolRec));
   sym->tnode = tnode;
-  sym->loc = loc;
+  sym->tnode->loc = loc;
   sym->lineList = calloc(1, sizeof(struct LineListRec));
   sym->lineList->lineno = tnode->lineno;
   return sym;
@@ -97,7 +96,7 @@ int getDeclLineno(struct SymbolRec *symbolRec) {
 }
 
 int getMemLoc(struct SymbolRec *symbolRec) {
-  return symbolRec->loc;
+  return symbolRec->tnode->loc;
 }
 
 TreeNode *getTreeNode(struct SymbolRec *symbolRec) {
@@ -144,7 +143,7 @@ void printSymbolTable(FILE *out, BucketList *symtab, int scopeId) {
     BucketList p = symtab[bi];
     while(p != NULL) {
       TreeNode *tnode = p->sym->tnode;
-      int loc = p->sym->loc;
+      int loc = p->sym->tnode->loc;
       LineList lineList = p->sym->lineList;
 
       fprintf(out, "%-8s", tnode->attr.name);

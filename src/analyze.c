@@ -280,6 +280,7 @@ static void buildSymtab_post(TreeNode *tnode) {
     struct SymbolRec *sym = lookupSymbol(name);
     if(sym != NULL)  {
       addLineno(sym, tnode->lineno);
+      tnode->loc = getMemLoc(sym);
     }
     else {
       char _buf[128];

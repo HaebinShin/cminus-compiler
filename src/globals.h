@@ -54,6 +54,7 @@ typedef struct treeNode {
         char *name;
         void *scope_ref;
     } attr;
+    int loc;
     TypeKind type;
 } TreeNode;
 
