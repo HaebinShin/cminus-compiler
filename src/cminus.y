@@ -163,6 +163,7 @@ selection-stmt: IF LPAREN expression RPAREN statement {
   $$ = newStmtNode(SelectK);
   $$->child[0] = $3;
   $$->child[1] = $5;
+  $$->nChildren = 2;
 } %prec THEN | IF LPAREN expression RPAREN statement ELSE statement {
   $$ = newStmtNode(SelectK);
   $$->child[0] = $3;
