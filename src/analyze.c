@@ -11,6 +11,7 @@ struct ScopeRec {
   int scopeId;
   int scopeDepth;
   int stackCounter;
+  int blockSize;
   BucketList *symtab;
 };
 
@@ -161,6 +162,7 @@ static void buildSymtab_pre(TreeNode *tnode) {
       /* local variable symbols */
       if(scope->scopeId > 0) {
         scope->stackCounter -= 4 * arrSize;
+        scope->blockSize += 4* arrSize;
         sym = newSymbol(tnode, scope->stackCounter);
       }
       /* global variable symbols */
@@ -206,6 +208,7 @@ static void buildSymtab_pre(TreeNode *tnode) {
     else enterScope();
 
     getCurrentScope()->stackCounter = -4;
+    getCurrentScope()->blockSize = 0;
     if(h_scopeStack > 2) {
       getCurrentScope()->stackCounter = getPrevScope()->stackCounter;
     }
@@ -306,6 +309,7 @@ void buildSymtab(TreeNode *syntaxTree) {
   // enter the global scope
   enterScope();
   getCurrentScope()->stackCounter = 0;
+  getCurrentScope()->blockSize = 0;   // never used for global scope
 
   traverseSiblings(syntaxTree, buildSymtab_pre, buildSymtab_post);
 
