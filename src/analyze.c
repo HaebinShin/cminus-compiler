@@ -448,9 +448,11 @@ static void typeCheck_post(TreeNode *tnode) {
     }
     else if(kind == VarK) {
       char const *name = tnode->attr.name;
-      TreeNode *symNode = getTreeNode(lookupSymbol(name));
+      void *sym = lookupSymbol(name);
+      TreeNode *symNode = getTreeNode(sym);
       assert(symNode != NULL);
       assert(symNode->type == IntK);
+      tnode->sym_ref = sym;
       tnode->type = symNode->type; 
     }
     else if(kind == CallK) {
