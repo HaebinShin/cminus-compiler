@@ -44,6 +44,8 @@ static void genArgExpression(TreeNode *exprNode);
 static void genExpression(TreeNode *tnode);
 static void genAssignExpr(TreeNode *tnode);
 static void genBinaryExpr(TreeNode *tnode);
+
+static void genArrayAddr(TreeNode *tnode);
 static void genVarExprLHS(TreeNode *tnode);
 static void genArrayExprLHS(TreeNode *tnode);
 static void genVarExpr(TreeNode *tnode);
@@ -150,12 +152,18 @@ static void genArgExpression(TreeNode *exprNode) {
   assert(exprNode->nodekind == ExprK);
 
   ExprKind kind = exprNode->kind.expr;
+  int flag = 0;
 
   if(kind == VarK) {
     TreeNode *declNode = getTreeNode(exprNode->sym_ref);
+    int isPointer = ((struct ScopeRec *)exprNode->scope_ref)->scopeId != 0;
     if(declNode->child[0]->attr.val >= 0) {
-      genVarExprLHS(exprNode);
+      flag = 1;
     }
+  }
+
+  if(flag) {
+    genArrayAddr(exprNode);
   }
   else {
     genExpression(exprNode);
@@ -230,6 +238,12 @@ static void genBinaryExpr(TreeNode *tnode) {
   emitBinaryOp(tnode->attr.op);
 }
 
+static void genArrayAddr(TreeNode *tnode) {
+  int isPointer = ((struct ScopeRec *)tnode->scope_ref)->scopeId != 0;
+  if(isPointer) genVarExpr(tnode);
+  else genVarExprLHS(tnode);
+}
+
 static void genVarExprLHS(TreeNode *tnode) {
   struct ScopeRec *scope_ref = tnode->scope_ref;
   if(scope_ref->scopeId == 0) {
@@ -242,9 +256,7 @@ static void genVarExprLHS(TreeNode *tnode) {
 }
 
 static void genArrayExprLHS(TreeNode *tnode) {
-  int isPointer = ((struct ScopeRec *)tnode->child[0]->scope_ref)->scopeId != 0;
-  if(isPointer) genVarExpr(tnode->child[0]);
-  else genVarExprLHS(tnode->child[0]);
+  genArrayAddr(tnode->child[0]);
   emitPushValue();
 
   genExpression(tnode->child[1]);
@@ -265,9 +277,7 @@ static void genVarExpr(TreeNode *tnode) {
 }
 
 static void genArrayExpr(TreeNode *tnode) {
-  int isPointer = ((struct ScopeRec *)tnode->child[0]->scope_ref)->scopeId != 0;
-  if(isPointer) genVarExpr(tnode->child[0]);
-  else genVarExprLHS(tnode->child[0]);
+  genArrayAddr(tnode->child[0]);
   emitPushValue();
 
   genExpression(tnode->child[1]);
