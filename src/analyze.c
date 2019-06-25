@@ -164,6 +164,7 @@ static void buildSymtab_pre(TreeNode *tnode) {
         sym = newSymbol(tnode, scope->stackCounter);
       }
 
+      tnode->scope_ref = getCurrentScope();
       st_insert(scope->symtab, sym);
     }
     // parameter
@@ -176,6 +177,8 @@ static void buildSymtab_pre(TreeNode *tnode) {
 
       scope->stackCounter -= 4;
       sym = newSymbol(tnode, scope->stackCounter);
+
+      tnode->scope_ref = getCurrentScope();
       st_insert(scope->symtab, sym);
 
       // you don't have to care whether the parameter is of type array or not
@@ -265,7 +268,7 @@ static void buildSymtab_post(TreeNode *tnode) {
     if(tnode->kind.stmt != CompdK) break;
     
     // store scope reference to AST node
-    tnode->attr.scope_ref = exitScope();
+    tnode->scope_ref = exitScope();
     break;
 
   case ExprK: {
@@ -277,6 +280,7 @@ static void buildSymtab_post(TreeNode *tnode) {
     if(sym != NULL)  {
       addLineno(sym, tnode->lineno);
       tnode->loc = getMemLoc(sym);
+      tnode->scope_ref = getTreeNode(sym)->scope_ref;
     }
     else {
       char _buf[128];
@@ -375,7 +379,7 @@ void buildSymtab(TreeNode *syntaxTree) {
 
 static void typeCheck_pre(TreeNode *tnode) {
   if(tnode->nodekind == StmtK && tnode->kind.stmt == CompdK) {
-    enterExistingScope(tnode->attr.scope_ref);
+    enterExistingScope(tnode->scope_ref);
   } else if (tnode->nodekind == DeclK && tnode->kind.decl == FunDeclK) {
     funcName = tnode->attr.name;
   }

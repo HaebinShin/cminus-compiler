@@ -71,7 +71,7 @@ static void genStatement(TreeNode *stmtNode) {
 static void genCompdStmt(TreeNode *tnode) {
   assert(tnode->nodekind == StmtK && tnode->kind.stmt == CompdK);
 
-  struct ScopeRec *scopeRef = tnode->attr.scope_ref;
+  struct ScopeRec *scopeRef = tnode->scope_ref;
   int blockSize = scopeRef->blockSize;
 
   emitBlockEnter(blockSize);
