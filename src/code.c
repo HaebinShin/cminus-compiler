@@ -54,7 +54,7 @@ void emitFunctionExit(void) {
   fputc('\n', code);
 
   emitComment("function exit");
-  // fprintf(code, "  subu\t$sp,\t$fp,\t%d\n", N_CALLEE_SAVED_REGS * 4 - 4);
+  fprintf(code, "  subu\t$sp,\t$fp,\t%d\n", N_CALLEE_SAVED_REGS * 4 - 4);
 
   /* pop registers here */
 
