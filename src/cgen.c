@@ -40,7 +40,20 @@ static void genCompdStmt(TreeNode *tnode);
 static void genSelectStmt(TreeNode *tnode);
 static void genIterStmt(TreeNode *tnode);
 static void genRetStmt(TreeNode *tnode);
+static void genArgExpression(TreeNode *exprNode);
 static void genExpression(TreeNode *tnode);
+static void genAssignExpr(TreeNode *tnode);
+static void genBinaryExpr(TreeNode *tnode);
+static void genVarExprLHS(TreeNode *tnode);
+static void genArrayExprLHS(TreeNode *tnode);
+static void genVarExpr(TreeNode *tnode);
+static void genArrayExpr(TreeNode *tnode);
+static void genCallExpr(TreeNode *tnode);
+
+static int normalizeLocalOffset(int offset) {
+  assert((offset + 400) % 4 == 0);
+  return offset / 4;
+}
 
 static void genStatement(TreeNode *stmtNode) {
   assert(stmtNode->nodekind == StmtK || stmtNode->nodekind == ExprK);
@@ -64,7 +77,10 @@ static void genStatement(TreeNode *stmtNode) {
   }
   else {
     assert(stmtNode->nodekind == ExprK);
+    emitComment("**** statement of a expression ****");
     genExpression(stmtNode);
+    emitComment("**** ************************* ****");
+    emitComment("\n");
   }
 }
 
@@ -126,13 +142,161 @@ static void genIterStmt(TreeNode *tnode) {
 static void genRetStmt(TreeNode *tnode) {
   if(tnode->nChildren == 1) {
     genExpression(tnode->child[0]);
-    emitUncondBranching(currentRetLabel);
+  }
+  emitUncondBranching(currentRetLabel);
+}
+
+static void genArgExpression(TreeNode *exprNode) {
+  assert(exprNode->nodekind == ExprK);
+
+  ExprKind kind = exprNode->kind.expr;
+
+  if(kind == VarK) {
+    TreeNode *declNode = getTreeNode(exprNode->sym_ref);
+    if(declNode->child[0]->attr.val >= 0) {
+      genVarExprLHS(exprNode);
+    }
+  }
+  else {
+    genExpression(exprNode);
   }
 }
 
-static void genExpression(TreeNode *tnode) {
+/* RHS expression gen */
+static void genExpression(TreeNode *exprNode) {
   // always end on $v0
-  // TODO
+
+  assert(exprNode->nodekind == ExprK);
+
+  ExprKind kind = exprNode->kind.expr;
+
+  if(kind == VarK) {
+    genVarExpr(exprNode);
+  }
+  else if(kind == OpExprK) {
+    if(exprNode->attr.op == ASSIGN) {
+      genAssignExpr(exprNode);
+    }
+    else if(exprNode->attr.op == LBRACKET) {
+      genArrayExpr(exprNode);
+    }
+    else {
+      genBinaryExpr(exprNode);
+    }
+  }
+  else if(kind == CallK) {
+    genCallExpr(exprNode);
+  }
+  else {
+    assert(kind == ConstK);
+    emitConstExpr(exprNode->attr.val);
+  }
+
+}
+
+static void genAssignExpr(TreeNode *tnode) {
+  TreeNode *lhs, *rhs;
+  lhs = tnode->child[0];
+  rhs = tnode->child[1];
+
+  if(lhs->kind.expr == VarK) {
+    genVarExprLHS(lhs);
+  }
+  else {
+    assert(lhs->kind.expr == OpExprK && lhs->attr.op == LBRACKET);
+    genArrayExprLHS(lhs);
+  }
+  emitPushValue();
+
+  genExpression(rhs);
+  emitPopLHS();
+
+  emitBinaryOp(ASSIGN);
+
+  // $v0 holds rhs value
+}
+
+static void genBinaryExpr(TreeNode *tnode) {
+  TreeNode *lhs, *rhs;
+  lhs = tnode->child[0];
+  rhs = tnode->child[1];
+
+  genExpression(lhs);
+  emitPushValue();
+
+  genExpression(rhs);
+  emitPopLHS();
+
+  emitBinaryOp(tnode->attr.op);
+}
+
+static void genVarExprLHS(TreeNode *tnode) {
+  struct ScopeRec *scope_ref = tnode->scope_ref;
+  if(scope_ref->scopeId == 0) {
+    emitGlobalRef(tnode->attr.name, GET_ADDRESS);
+  }
+  else {
+    int relativeOffset = normalizeLocalOffset(tnode->loc);
+    emitLocalRef(relativeOffset, GET_ADDRESS);
+  }
+}
+
+static void genArrayExprLHS(TreeNode *tnode) {
+  genVarExpr(tnode->child[0]);
+  emitPushValue();
+
+  genExpression(tnode->child[1]);
+  emitPopLHS();
+
+  emitArrayOp(GET_ADDRESS);
+}
+
+static void genVarExpr(TreeNode *tnode) {
+  struct ScopeRec *scope_ref = tnode->scope_ref;
+  if(scope_ref->scopeId == 0) {
+    emitGlobalRef(tnode->attr.name, GET_VALUE);
+  }
+  else {
+    int relativeOffset = normalizeLocalOffset(tnode->loc);
+    emitLocalRef(relativeOffset, GET_VALUE);
+  }
+}
+
+static void genArrayExpr(TreeNode *tnode) {
+  genVarExpr(tnode->child[0]);
+  emitPushValue();
+
+  genExpression(tnode->child[1]);
+  emitPopLHS();
+
+  emitArrayOp(GET_VALUE);
+}
+
+static void genCallExpr(TreeNode *tnode) {
+  char const *name = tnode->attr.name;
+  TreeNode *argNode = tnode->child[0];
+
+  if(strcmp(name, "input") == 0) {
+    emitInputSyscall();
+    return;
+  }
+  else if(strcmp(name, "output") == 0) {
+    genExpression(argNode);
+    emitOutputSyscall();
+    return;
+  }
+
+  int cnt = 0;
+  while(argNode) {
+    genArgExpression(argNode);
+    emitPushValue();
+
+    argNode = argNode->sibling;
+    ++cnt;
+  }
+
+  emitCallFunction(name);
+  emitPopMultiple(cnt);
 }
 
 void codeGen(TreeNode *syntaxTree, char *codefile) {
@@ -140,6 +304,8 @@ void codeGen(TreeNode *syntaxTree, char *codefile) {
   strcat(header, codefile);
   emitComment(header);
   fputc('\n', code);
+
+  emitInitial();
 
   TreeNode *pNode = syntaxTree;
 
