@@ -242,7 +242,9 @@ static void genVarExprLHS(TreeNode *tnode) {
 }
 
 static void genArrayExprLHS(TreeNode *tnode) {
-  genVarExpr(tnode->child[0]);
+  int isPointer = ((struct ScopeRec *)tnode->child[0]->scope_ref)->scopeId != 0;
+  if(isPointer) genVarExpr(tnode->child[0]);
+  else genVarExprLHS(tnode->child[0]);
   emitPushValue();
 
   genExpression(tnode->child[1]);
@@ -263,7 +265,9 @@ static void genVarExpr(TreeNode *tnode) {
 }
 
 static void genArrayExpr(TreeNode *tnode) {
-  genVarExpr(tnode->child[0]);
+  int isPointer = ((struct ScopeRec *)tnode->child[0]->scope_ref)->scopeId != 0;
+  if(isPointer) genVarExpr(tnode->child[0]);
+  else genVarExprLHS(tnode->child[0]);
   emitPushValue();
 
   genExpression(tnode->child[1]);
