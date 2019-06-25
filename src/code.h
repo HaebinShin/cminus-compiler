@@ -1,9 +1,13 @@
 #ifndef _CODE_H_
 #define _CODE_H_
 
-void emitGlobal(char const *name);
-void emitGlobalArray(char const *name, int size);
-void emitFunctionInit(char const *name);
-void emitFunctionTeardown(void);
+void emitComment(char const *text);
+
+void emitGlobalVariable(char const *name, int size);
+void emitFunctionEnter(char const *name);
+void emitFunctionExit(void);
+
+void emitBlockEnter(int size);
+void emitBlockExit(int size);
 
 #endif
