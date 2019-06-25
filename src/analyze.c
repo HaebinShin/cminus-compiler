@@ -7,14 +7,6 @@
 #define MAX_SCOPE_DEPTH 20
 #define ERROR_MSG(a, b, c) (analyzeErrorMsg(a, b, c))
 
-struct ScopeRec {
-  int scopeId;
-  int scopeDepth;
-  int stackCounter;
-  int blockSize;
-  BucketList *symtab;
-};
-
 typedef void (*TraverseFunc)(TreeNode *);
 
 /* Whole list of scopes created so far */
