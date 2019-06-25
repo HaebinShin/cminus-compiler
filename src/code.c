@@ -14,6 +14,10 @@ void emitComment(char const *text) {
   fprintf(code, "# %s\n", text);
 }
 
+void emitRaw(char const *raw) {
+  fputs(raw, code);
+}
+
 void emitGlobalVariable(char const *name, int size) {
   if(current_section != DATA_SECTION) {
     if(current_section != NONE_SECTION) fputc('\n', code);
@@ -51,8 +55,6 @@ void emitFunctionEnter(char const *name) {
 }
 
 void emitFunctionExit(void) {
-  fputc('\n', code);
-
   emitComment("function exit");
   fprintf(code, "  subu\t$sp,\t$fp,\t%d\n", N_CALLEE_SAVED_REGS * 4 - 4);
 
@@ -69,8 +71,23 @@ void emitFunctionExit(void) {
 }
 
 void emitBlockEnter(int size) {
+  if(size == 0) return;
   fprintf(code, "  subu\t$sp,\t$sp,\t%d\n", size);
 }
 void emitBlockExit(int size) {
+  if(size == 0) return;
   fprintf(code, "  addu\t$sp,\t$sp,\t%d\n", size);
+}
+
+void emitBranching(char const *label, int cond) {
+  if(cond) fprintf(code, "bne $v0, $zero, %s\n", label);
+  else fprintf(code, "beq $v0, $zero, %s\n", label);
+}
+
+void emitUncondBranching(char const *label) {
+  fprintf(code, "b %s\n", label);
+}
+
+void emitLabel(char const *label) {
+  fprintf(code, "%s: \n", label);
 }
