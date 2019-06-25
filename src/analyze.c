@@ -33,6 +33,7 @@ static int functionLocCounter;
 
 static char* funcName;
 
+static TreeNode *externDecl = NULL;
 
 static void NOOP(TreeNode *_) {
   /* DO NOTHING */
@@ -290,6 +291,50 @@ static void buildSymtab_post(TreeNode *tnode) {
   }
 }
 
+static void addExternalFunctions(void) {
+  TreeNode *declRoot;
+  TreeNode *paramNode;
+  void *sym;
+
+  /* int input(void) */
+  declRoot = newDeclNode(FunDeclK);
+  declRoot->child[0] = newTypeNode();
+  declRoot->child[0]->type = IntK;
+  declRoot->attr.name = "input";
+  declRoot->child[1] = newParamNode();
+  declRoot->child[1]->nChildren = 0;
+  declRoot->child[2] = newStmtNode(CompdK);
+  declRoot->type = IntK;
+
+  sym = newSymbol(declRoot, functionLocCounter);
+  st_insert(getCurrentScope()->symtab, sym);
+  ++functionLocCounter;
+
+  externDecl = declRoot;
+
+  /* void output(int) */
+  declRoot = newDeclNode(FunDeclK);
+  declRoot->child[0] = newTypeNode();
+  declRoot->child[0]->type = VoidK;
+  declRoot->attr.name = "output";
+
+  paramNode = newParamNode();
+  paramNode->child[0] = newTypeNode();
+  paramNode->child[0]->type = IntK;
+  paramNode->attr.name = "";
+  paramNode->type = IntK;
+
+  declRoot->child[1] = paramNode;
+  declRoot->child[2] = newStmtNode(CompdK);
+  declRoot->type = VoidK;
+
+  sym = newSymbol(declRoot, functionLocCounter);
+  st_insert(getCurrentScope()->symtab, sym);
+  ++functionLocCounter;
+
+  externDecl->sibling = declRoot;
+}
+
 void buildSymtab(TreeNode *syntaxTree) {
   len_scopeWholeList = 0;
   h_scopeStack = 0;
@@ -302,6 +347,8 @@ void buildSymtab(TreeNode *syntaxTree) {
   enterScope();
   getCurrentScope()->stackCounter = 0;
   getCurrentScope()->blockSize = 0;   // never used for global scope
+
+  addExternalFunctions();
 
   traverseSiblings(syntaxTree, buildSymtab_pre, buildSymtab_post);
 
