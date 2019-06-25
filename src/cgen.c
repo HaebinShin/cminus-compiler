@@ -156,7 +156,6 @@ static void genArgExpression(TreeNode *exprNode) {
 
   if(kind == VarK) {
     TreeNode *declNode = getTreeNode(exprNode->sym_ref);
-    int isPointer = ((struct ScopeRec *)exprNode->scope_ref)->scopeId != 0;
     if(declNode->child[0]->attr.val >= 0) {
       flag = 1;
     }
@@ -239,7 +238,7 @@ static void genBinaryExpr(TreeNode *tnode) {
 }
 
 static void genArrayAddr(TreeNode *tnode) {
-  int isPointer = ((struct ScopeRec *)tnode->scope_ref)->scopeId != 0;
+  int isPointer = getTreeNode(tnode->sym_ref)->child[0]->attr.val == 0;
   if(isPointer) genVarExpr(tnode);
   else genVarExprLHS(tnode);
 }
